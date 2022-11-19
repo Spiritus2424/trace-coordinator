@@ -1,0 +1,5 @@
+FROM quay.io/wildfly/wildfly:27.0.0.Final-jdk11
+
+ARG TRACE_COORDINATOR_VERSION
+
+COPY build/libs/trace-coordinator-${TRACE_COORDINATOR_VERSION}.war /opt/jboss/wildfly/standalone/deployments/
