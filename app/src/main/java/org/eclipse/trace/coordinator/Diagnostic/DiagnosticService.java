@@ -1,16 +1,19 @@
 package org.eclipse.trace.coordinator.Diagnostic;
 
+import org.eclipse.tsp.java.client.models.health.Health;
+import org.eclipse.tsp.java.client.models.health.HealthStatus;
+
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class DiagnosticService {
-    private String status;
+    private Health status;
 
     DiagnosticService() {
-        status = "UP";
+        status = new Health(HealthStatus.UP);
     }
 
-    public String getStatus() {
+    public Health getStatus() {
         return status;
     }
 }
