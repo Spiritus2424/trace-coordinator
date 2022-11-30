@@ -10,17 +10,23 @@ group = "org.eclipse"
 version = "v1.0.0-alpha"
 
 plugins {
-    // Apply the application plugin to add support for building a CLI application in Java.
-    // application
     java
     war
+    `maven-publish`
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
     mavenCentral()
-
     mavenLocal()
+
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/spiritus2424/tsp-java-client")
+        credentials {
+            username = System.getenv("USERNAME")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
 }
 
 dependencies {
@@ -28,30 +34,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
     // This dependency is used by the application.
-    implementation("com.google.guava:guava:31.0.1-jre")
-
+    implementation("org.eclipse:tsp-java-client:v1.0.0-alpha")
     providedCompile("jakarta.platform:jakarta.jakartaee-api:10.0.0")
-    // implementation("jakarta.platform:jakarta.jakartaee-web-api:9.0.0")
-
-    // implementation("org.glassfish.jersey.containers:jersey-container-servlet:3.1.0")
-    
-    
-
-
-    // implementation("org.glassfish.jersey.containers:jersey-container-servlet:3.1.0")
-    // implementation("org.glassfish.jersey.inject:jersey-hk2:3.1.0")
-    // implementation("org.glassfish.jersey.media:jersey-media-json-binding:3.1.0")
-    // implementation("org.glassfish.jersey.ext.cdi:jersey-cdi1x:3.1.0")
-    // implementation("org.glassfish.jersey.ext.cdi:jersey-cdi1x-servlet:3.1.0")
-    // implementation("org.glassfish.jersey.ext.cdi:jersey-cdi1x-ban-custom-hk2-binding:3.1.0")
 }
 
-
-
-// application {
-//     // Define the main class for the application.
-//     mainClass.set("org.eclipse.trace.coordinator.App")
-// }
 
 tasks.war {
     archiveBaseName.set("trace-coordinator")
