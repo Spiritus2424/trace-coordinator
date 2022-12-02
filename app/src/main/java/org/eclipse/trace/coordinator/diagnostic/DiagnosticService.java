@@ -1,4 +1,4 @@
-package org.eclipse.trace.coordinator.Diagnostic;
+package org.eclipse.trace.coordinator.diagnostic;
 
 import org.eclipse.tsp.java.client.models.health.Health;
 import org.eclipse.tsp.java.client.models.health.HealthStatus;
