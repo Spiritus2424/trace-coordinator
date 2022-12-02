@@ -1,4 +1,6 @@
-package org.eclipse.trace.coordinator.Diagnostic;
+package org.eclipse.trace.coordinator.diagnostic;
+
+import org.eclipse.trace.coordinator.configuration.ConfigurationService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -14,6 +16,9 @@ public class DiagnosticController {
 
     @Inject
     DiagnosticService diagnosticService;
+
+    @Inject
+    ConfigurationService configurationService;
 
     @GET
     @Path("health")
