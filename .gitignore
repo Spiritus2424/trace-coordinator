@@ -8,3 +8,6 @@ bin
 # Vscode
 .devcontainer
 .vscode
+
+# Trace Coordinator Configuration
+.trace-coordinator.yml
