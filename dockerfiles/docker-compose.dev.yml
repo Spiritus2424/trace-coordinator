@@ -13,6 +13,6 @@ services:
       mode: replicated
       replicas: 4
     volumes:
-      - $HOME/ws/samples-traces:$HOME/traces:ro
+      - ${PWD}/traces:/traces:ro
     ports:
-      - "8081-8090:8080"
+      - "8081-8084:8080"
