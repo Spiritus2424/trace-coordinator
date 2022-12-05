@@ -21,6 +21,10 @@ public class TraceServer {
 
     }
 
+    public String getUrlWithPort() {
+        return String.format("%s:%s", this.url, this.port);
+    }
+
     public String getUrl() {
         return url;
     }
