@@ -81,4 +81,20 @@ public class TraceService {
 
         return trace;
     }
+
+    public Trace deleteTrace(String traceUuid) {
+        Trace trace = null;
+
+        for (TraceServer traceServer : configurationService.getConfiguration().getTraceServers()) {
+            TspClient tspClient = new TspClient(traceServer.getUrlWithPort());
+            TspClientResponse<Trace> response = tspClient.deleteTrace(traceUuid, Optional.empty(), Optional.empty());
+
+            if (response.isOk() && response.getResponseModel() != null) {
+                trace = response.getResponseModel();
+                break;
+            }
+        }
+
+        return trace;
+    }
 }

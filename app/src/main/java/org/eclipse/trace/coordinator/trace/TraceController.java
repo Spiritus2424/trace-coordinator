@@ -7,7 +7,9 @@ import org.eclipse.tsp.java.client.models.trace.Trace;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -32,9 +34,9 @@ public class TraceController {
     }
 
     @GET
-    @Path("{traceUuid}")
+    @Path("{uuid}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTrace(@PathParam("traceUuid") UUID traceUuid) {
+    public Response getTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
         Trace trace = traceService.getTrace(traceUuid.toString());
         Response response;
         if (trace == null) {
@@ -49,7 +51,7 @@ public class TraceController {
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response openTrace(Query query) {
+    public Response openTrace(@NotNull Query query) {
 
         Trace trace = traceService.openTrace(query);
         Response response;
@@ -59,6 +61,20 @@ public class TraceController {
             response = Response.ok(trace).build();
         }
 
+        return response;
+    }
+
+    @DELETE
+    @Path("{uuid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteTrace(@PathParam("uuid") @NotNull String traceUuid) {
+        Trace trace = traceService.deleteTrace(traceUuid);
+        Response response;
+        if (trace == null) {
+            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+        } else {
+            response = Response.ok(trace).build();
+        }
         return response;
     }
 
