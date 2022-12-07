@@ -11,3 +11,7 @@ bin
 
 # Trace Coordinator Configuration
 .trace-coordinator.yml
+
+
+# Trace Sample Directory
+traces
