@@ -7,12 +7,34 @@ services:
     ports:
       - "8080:8080"
 
-  trace-server:
+  trace-server-1:
+    container_name: Trace-Server-1
     image: trace-server
-    deploy:
-      mode: replicated
-      replicas: 4
     volumes:
-      - ${PWD}/traces:/traces:ro
+      - ${PWD}/traces/103-compare-package-managers/apt:/traces:ro
     ports:
-      - "8081-8084:8080"
+      - "8081:8080"
+
+  trace-server-2:
+    container_name: Trace-Server-2
+    image: trace-server
+    volumes:
+      - ${PWD}/traces/103-compare-package-managers/pacman:/traces:ro
+    ports:
+      - "8082:8080"
+
+  trace-server-3:
+    container_name: Trace-Server-3
+    image: trace-server
+    volumes:
+      - ${PWD}/traces/103-compare-package-managers/yum:/traces:ro
+    ports:
+      - "8083:8080"
+
+  trace-server-4:
+    container_name: Trace-Server-4
+    image: trace-server
+    volumes:
+      - ${PWD}/traces/103-compare-package-managers/zypper:/traces:ro
+    ports:
+      - "8084:8080"
