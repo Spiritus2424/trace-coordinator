@@ -4,15 +4,15 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class DistributedExperiment {
+public class Experiment {
 
     @JsonProperty("traces-uuid")
     private List<String> tracesUuid;
 
-    public DistributedExperiment() {
+    public Experiment() {
     }
 
-    public DistributedExperiment(List<String> tracesUuid) {
+    public Experiment(List<String> tracesUuid) {
         this.tracesUuid = tracesUuid;
     }
 
