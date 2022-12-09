@@ -1,4 +1,4 @@
-package org.eclipse.trace.coordinator.distributedexperiment;
+package org.eclipse.trace.coordinator.experiment;
 
 import java.util.List;
 
