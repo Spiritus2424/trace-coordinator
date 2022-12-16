@@ -1,6 +1,9 @@
 package org.eclipse.trace.coordinator.diagnostic;
 
-import org.eclipse.trace.coordinator.configuration.ConfigurationService;
+import org.eclipse.trace.coordinator.traceserver.TraceServer;
+import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
+import org.eclipse.tsp.java.client.models.health.Health;
+import org.eclipse.tsp.java.client.models.health.HealthStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -18,13 +21,20 @@ public class DiagnosticController {
     DiagnosticService diagnosticService;
 
     @Inject
-    ConfigurationService configurationService;
+    TraceServerManager traceServerManager;
 
     @GET
     @Path("health")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHealthStatus() {
+        Health health = null;
+        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+            health = diagnosticService.getStatus(traceServer);
+            if (health.getStatus() == HealthStatus.DOWN) {
+                break;
+            }
+        }
 
-        return Response.ok(diagnosticService.getStatus()).build();
+        return Response.ok(health).build();
     }
 }
