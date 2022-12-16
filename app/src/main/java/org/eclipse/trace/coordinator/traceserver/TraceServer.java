@@ -2,23 +2,19 @@ package org.eclipse.trace.coordinator.traceserver;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.eclipse.tsp.java.client.protocol.tspclient.TspClient;
 
 public class TraceServer {
     private String url;
     private String port;
-
-    @JsonProperty("traces-path")
     private List<String> tracesPath;
-
-    public TraceServer() {
-    }
+    private TspClient tspClient;
 
     public TraceServer(String url, String port, List<String> tracesPath) {
         this.url = url;
         this.port = port;
         this.tracesPath = tracesPath;
-
+        this.tspClient = new TspClient(getUrlWithPort());
     }
 
     public String getUrlWithPort() {
@@ -26,7 +22,7 @@ public class TraceServer {
     }
 
     public String getUrl() {
-        return url;
+        return this.url;
     }
 
     public void setUrl(String url) {
@@ -34,7 +30,7 @@ public class TraceServer {
     }
 
     public String getPort() {
-        return port;
+        return this.port;
     }
 
     public void setPort(String port) {
@@ -42,7 +38,11 @@ public class TraceServer {
     }
 
     public List<String> getTracesPath() {
-        return tracesPath;
+        return this.tracesPath;
+    }
+
+    public TspClient getTspClient() {
+        return tspClient;
     }
 
 }
