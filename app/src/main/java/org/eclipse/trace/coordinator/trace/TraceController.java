@@ -1,10 +1,16 @@
 package org.eclipse.trace.coordinator.trace;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
+import org.eclipse.trace.coordinator.traceserver.TraceServer;
+import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.models.query.Query;
 import org.eclipse.tsp.java.client.models.trace.Trace;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -26,23 +32,48 @@ public class TraceController {
     @Inject
     TraceService traceService;
 
+    @Inject
+    private TraceServerManager traceServerManager;
+
+    @PostConstruct
+    public void openTraces() {
+        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+            for (String tracesPath : traceServer.getTracesPath()) {
+                HashMap<String, Object> parameters = new HashMap<>();
+                parameters.put("uri", tracesPath);
+                parameters.put("name", traceServer.getUrlWithPort());
+                traceService.openTrace(traceServer, new Query(parameters));
+            }
+        }
+    }
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response getTraces() {
-        return Response.ok(traceService.getTraces()).build();
+        List<Trace> traces = new ArrayList<>();
+        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
+            traces.addAll(this.traceService.getTraces(traceServer));
+        }
 
+        return Response.ok(traces).build();
     }
 
     @GET
     @Path("{uuid}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response getTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
-        Trace trace = traceService.getTrace(traceUuid.toString());
-        Response response;
-        if (trace == null) {
-            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-        } else {
-            response = Response.ok(trace).build();
+        Response response = null;
+
+        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+            Trace trace = traceService.getTrace(traceServer, traceUuid.toString());
+            if (trace != null) {
+                response = Response.ok(trace).build();
+                break;
+            } else {
+                response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+            }
         }
 
         return response;
@@ -52,13 +83,16 @@ public class TraceController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response openTrace(@NotNull Query query) {
+        Response response = null;
 
-        Trace trace = traceService.openTrace(query);
-        Response response;
-        if (trace == null) {
-            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-        } else {
-            response = Response.ok(trace).build();
+        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+            Trace trace = traceService.openTrace(traceServer, query);
+            if (trace != null) {
+                response = Response.ok(trace).build();
+                break;
+            } else {
+                response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+            }
         }
 
         return response;
@@ -67,14 +101,19 @@ public class TraceController {
     @DELETE
     @Path("{uuid}")
     @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteTrace(@PathParam("uuid") @NotNull String traceUuid) {
-        Trace trace = traceService.deleteTrace(traceUuid);
-        Response response;
-        if (trace == null) {
-            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-        } else {
-            response = Response.ok(trace).build();
+        Response response = null;
+        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+            Trace trace = traceService.deleteTrace(traceServer, traceUuid);
+            if (trace != null) {
+                response = Response.ok(trace).build();
+                break;
+            } else {
+                response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+            }
         }
+
         return response;
     }
 
