@@ -37,15 +37,15 @@ public class TraceService {
         return traces;
     }
 
-    public Trace openTrace(TraceServer traceServer, Query query) {
+    public List<Trace> openTrace(TraceServer traceServer, Query query) {
         TspClientResponse<Trace> response = traceServer.getTspClient().openTrace(query);
 
-        Trace trace = null;
+        List<Trace> traces = new ArrayList<>();
         if (response.isOk() && response.getResponseModel() != null) {
-            trace = response.getResponseModel();
+            traces.add(response.getResponseModel());
         }
 
-        return trace;
+        return traces;
     }
 
     public Trace deleteTrace(TraceServer traceServer, String traceUuid) {

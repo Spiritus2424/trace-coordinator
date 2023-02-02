@@ -3,6 +3,7 @@ package org.eclipse.trace.coordinator.trace;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
@@ -39,9 +40,9 @@ public class TraceController {
     public void openTraces() {
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
             for (String tracesPath : traceServer.getTracesPath()) {
-                HashMap<String, Object> parameters = new HashMap<>();
+                Map<String, Object> parameters = new HashMap<>();
                 parameters.put("uri", tracesPath);
-                parameters.put("name", traceServer.getUrlWithPort());
+                parameters.put("name", traceServer.getHost());
                 traceService.openTrace(traceServer, new Query(parameters));
             }
         }
@@ -84,15 +85,31 @@ public class TraceController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response openTrace(@NotNull Query query) {
         Response response = null;
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("uri", query.getParameters().get("uri"));
+        String traceName = (String) query.getParameters().get("name");
 
+        if (traceName == null) {
+            System.out.println(query.getParameters().get("name"));
+            String[] uri = ((String) query.getParameters().get("uri")).split("/");
+            traceName = uri[uri.length - 1];
+        }
+
+        List<Trace> traces = new ArrayList<>();
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            Trace trace = traceService.openTrace(traceServer, query);
-            if (trace != null) {
-                response = Response.ok(trace).build();
-                break;
-            } else {
-                response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-            }
+            /**
+             * Fix Trace Server: The trace server should put a name by default if it is not
+             * provide
+             */
+            parameters.put("name", String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")));
+            System.out.println(parameters.get("name"));
+            traces.addAll(traceService.openTrace(traceServer, new Query(parameters)));
+        }
+
+        if (traces.size() != 0) {
+            response = Response.ok(traces).build();
+        } else {
+            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
         }
 
         return response;
