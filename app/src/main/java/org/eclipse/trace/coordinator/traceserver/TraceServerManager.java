@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
+import org.eclipse.trace.coordinator.configuration.Configuration;
 import org.eclipse.trace.coordinator.traceserver.properties.TraceServerProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,16 +24,14 @@ public class TraceServerManager {
     }
 
     @PostConstruct
-    @SuppressWarnings("unchecked")
-    public void loadTraceServer() {
+    public void loadTraceServers() {
         String fileName = System.getProperty("TRACE_COORDINATOR_FILE");
         File file = new File(fileName != null ? fileName : ".trace-coordinator.yml");
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
         try {
-            List<TraceServerProperties> listOfTraceServerProperties = (List<TraceServerProperties>) objectMapper
-                    .readValue(file, Map.class)
-                    .get("trace-servers");
+            List<TraceServerProperties> listOfTraceServerProperties = objectMapper
+                    .readValue(file, Configuration.class).getTraceServerProperties();
             for (TraceServerProperties traceServerProperties : listOfTraceServerProperties) {
                 this.traceServers.add(traceServerProperties.toObject());
             }

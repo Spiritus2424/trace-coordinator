@@ -8,7 +8,7 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TraceServerProperties implements Properties<TraceServer> {
-    private String url;
+    private String host;
     private String port;
 
     @JsonProperty("traces-path")
@@ -17,18 +17,18 @@ public class TraceServerProperties implements Properties<TraceServer> {
     public TraceServerProperties() {
     }
 
-    public TraceServerProperties(String url, String port, List<String> tracesPath) {
-        this.url = url;
+    public TraceServerProperties(String host, String port, List<String> tracesPath) {
+        this.host = host;
         this.port = port;
         this.tracesPath = tracesPath;
     }
 
-    public String getUrl() {
-        return url;
+    public String getHost() {
+        return host;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public String getPort() {
@@ -44,7 +44,7 @@ public class TraceServerProperties implements Properties<TraceServer> {
     }
 
     public TraceServer toObject() {
-        return new TraceServer(this.url, this.port, this.tracesPath);
+        return new TraceServer(this.host, this.port, this.tracesPath);
     }
 
 }
