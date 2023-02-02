@@ -9,9 +9,9 @@ import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.models.experiment.Experiment;
 import org.eclipse.tsp.java.client.models.query.Query;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -25,7 +25,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-@ApplicationPath("/experiments")
+@Path("experiments")
+@ApplicationScoped
 public class ExperimentController {
 
     @Inject
@@ -79,7 +80,8 @@ public class ExperimentController {
             distributedExperiment = new DistributedExperiment(query.getParameters().get("name").toString());
 
             for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-                query.getParameters().put("name", traceServer.getUrlWithPort().concat(distributedExperiment.getName()));
+                query.getParameters().put("name",
+                        String.format("%s$%s", traceServer.getHost(), distributedExperiment.getName()));
                 Experiment experiment = this.experimentService.createExperiment(traceServer, query);
                 if (experiment != null) {
                     distributedExperiment.addExperiment(experiment);
