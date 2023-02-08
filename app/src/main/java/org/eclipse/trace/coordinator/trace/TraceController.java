@@ -39,10 +39,12 @@ public class TraceController {
     @PostConstruct
     public void openTraces() {
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            for (String tracesPath : traceServer.getTracesPath()) {
+            for (String tracePath : traceServer.getTracesPath()) {
                 Map<String, Object> parameters = new HashMap<>();
-                parameters.put("uri", tracesPath);
-                parameters.put("name", traceServer.getHost());
+                parameters.put("uri", tracePath);
+                String[] uri = tracePath.split("/");
+                parameters.put("name",
+                        String.format("%s$%s", traceServer.getHost(), uri[uri.length - 1]));
                 traceService.openTrace(traceServer, new Query(parameters));
             }
         }
