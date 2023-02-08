@@ -11,7 +11,7 @@ services:
     container_name: Trace-Server-1
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/apt:/traces:ro
+      - ${PWD}/traces/103-compare-package-managers/apt:/apt:ro
     ports:
       - "8081:8080"
 
@@ -19,7 +19,7 @@ services:
     container_name: Trace-Server-2
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/pacman:/traces:ro
+      - ${PWD}/traces/103-compare-package-managers/pacman:/pacman:ro
     ports:
       - "8082:8080"
 
@@ -27,7 +27,7 @@ services:
     container_name: Trace-Server-3
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/yum:/traces:ro
+      - ${PWD}/traces/103-compare-package-managers/yum:/yum:ro
     ports:
       - "8083:8080"
 
@@ -35,6 +35,6 @@ services:
     container_name: Trace-Server-4
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/zypper:/traces:ro
+      - ${PWD}/traces/103-compare-package-managers/zypper:/zypper:ro
     ports:
       - "8084:8080"
