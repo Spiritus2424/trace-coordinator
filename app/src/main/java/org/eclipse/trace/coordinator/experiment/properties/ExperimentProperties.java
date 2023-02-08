@@ -18,6 +18,7 @@ public class ExperimentProperties implements Properties<DistributedExperiment> {
     }
 
     public ExperimentProperties(String name, List<String> tracesUuid) {
+        this.name = name;
         this.tracesUuid = tracesUuid;
     }
 
@@ -31,6 +32,6 @@ public class ExperimentProperties implements Properties<DistributedExperiment> {
 
     @Override
     public DistributedExperiment toObject() {
-        return new DistributedExperiment(this.name);
+        return new DistributedExperiment(this.name, this.tracesUuid);
     }
 }
