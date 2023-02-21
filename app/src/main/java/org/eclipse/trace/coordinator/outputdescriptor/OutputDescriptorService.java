@@ -3,6 +3,7 @@ package org.eclipse.trace.coordinator.outputdescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.models.outputdescriptor.OutputDescriptor;
@@ -13,7 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class OutputDescriptorService {
 
-    public List<OutputDescriptor> getOutputDescriptors(TraceServer traceServer, String experimentUuid) {
+    public List<OutputDescriptor> getOutputDescriptors(TraceServer traceServer, UUID experimentUuid) {
         TspClientResponse<OutputDescriptor[]> response = traceServer.getTspClient().experimentOutputs(experimentUuid,
                 Optional.empty());
 
