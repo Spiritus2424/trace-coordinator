@@ -36,7 +36,7 @@ dependencies {
     // This dependency is used by the application.
     providedCompile("jakarta.platform:jakarta.jakartaee-api:10.0.0")
     
-    implementation("org.eclipse:tsp-java-client:v1.1.2-alpha")
+    implementation("org.eclipse:tsp-java-client:v1.2.0-alpha")
     
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.1")
