@@ -109,7 +109,7 @@ public class DistributedExperiment {
     }
 
     public Experiment toExperiment() {
-        return new Experiment(getUuid().toString(), getName(), getStart(), getEnd(), getNbEvents(), getIndexingStatus(),
+        return new Experiment(getUuid(), getName(), getStart(), getEnd(), getNbEvents(), getIndexingStatus(),
                 getTraces());
     }
 }

@@ -70,7 +70,7 @@ public class TraceController {
         Response response = null;
 
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            Trace trace = traceService.getTrace(traceServer, traceUuid.toString());
+            Trace trace = traceService.getTrace(traceServer, traceUuid);
             if (trace != null) {
                 response = Response.ok(trace).build();
                 break;
@@ -121,7 +121,7 @@ public class TraceController {
     @Path("{uuid}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response deleteTrace(@PathParam("uuid") @NotNull String traceUuid) {
+    public Response deleteTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
         Response response = null;
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
             Trace trace = traceService.deleteTrace(traceServer, traceUuid);

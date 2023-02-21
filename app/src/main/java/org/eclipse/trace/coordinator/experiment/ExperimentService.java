@@ -3,6 +3,7 @@ package org.eclipse.trace.coordinator.experiment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.models.experiment.Experiment;
@@ -27,7 +28,7 @@ public class ExperimentService {
         return experiments;
     }
 
-    public Experiment getExperiment(TraceServer traceServer, String experimentUuid) {
+    public Experiment getExperiment(TraceServer traceServer, UUID experimentUuid) {
         TspClientResponse<Experiment> response = traceServer.getTspClient().getExperiment(experimentUuid);
 
         Experiment experiment = null;
@@ -49,7 +50,7 @@ public class ExperimentService {
         return experiment;
     }
 
-    public Experiment updateExperiment(TraceServer traceServer, String experimentUuid, Query query) {
+    public Experiment updateExperiment(TraceServer traceServer, UUID experimentUuid, Query query) {
         TspClientResponse<Experiment> response = traceServer.getTspClient().updateExperiment(experimentUuid, query);
 
         Experiment experiment = null;
@@ -61,7 +62,7 @@ public class ExperimentService {
 
     }
 
-    public Experiment deleteExperiment(TraceServer traceServer, String experimentUuid) {
+    public Experiment deleteExperiment(TraceServer traceServer, UUID experimentUuid) {
         TspClientResponse<Experiment> response = traceServer.getTspClient().deleteExperiment(experimentUuid);
 
         Experiment experiment = null;

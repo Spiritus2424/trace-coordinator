@@ -83,7 +83,7 @@ public class ExperimentController {
         Response response = null;
 
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            Experiment experiment = experimentService.getExperiment(traceServer, experimentUuid.toString());
+            Experiment experiment = experimentService.getExperiment(traceServer, experimentUuid);
             if (experiment != null) {
                 response = Response.ok(experiment).build();
                 break;
@@ -140,7 +140,7 @@ public class ExperimentController {
     public Response deleteExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid) {
         List<Experiment> experiments = new ArrayList<>();
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            experiments.add(experimentService.deleteExperiment(traceServer, experimentUuid.toString()));
+            experiments.add(experimentService.deleteExperiment(traceServer, experimentUuid));
         }
 
         Response response = null;
