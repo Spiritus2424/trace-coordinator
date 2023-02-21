@@ -8,9 +8,9 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.models.outputdescriptor.OutputDescriptor;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -20,7 +20,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-@ApplicationPath("/experiments/{expUUID}/outputs")
+@Path("/experiments/{expUUID}/outputs")
+@ApplicationScoped
 public class OutputDescriptorController {
 
     @Inject
@@ -38,7 +39,7 @@ public class OutputDescriptorController {
 
         for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
             outputDescriptors
-                    .addAll(outputDescriptorService.getOutputDescriptors(traceServer, experimentUuid.toString()));
+                    .addAll(outputDescriptorService.getOutputDescriptors(traceServer, experimentUuid));
         }
 
         return Response.ok(outputDescriptors.toArray()).build();
