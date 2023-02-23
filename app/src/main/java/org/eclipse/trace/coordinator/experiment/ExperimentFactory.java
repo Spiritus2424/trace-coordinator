@@ -10,13 +10,17 @@ public class ExperimentFactory {
     public static Experiment createExperiment(List<Experiment> experiments) {
         Experiment distributedExperiment = experiments.get(0);
         experiments.stream().skip(1).forEach((Experiment experiment) -> {
-            if (experiment.getIndexingStatus() == IndexingStatus.COMPLETED) {
-                distributedExperiment.setStart(distributedExperiment.getEnd().min(experiment.getEnd()));
-                distributedExperiment.setEnd(distributedExperiment.getEnd().max(experiment.getEnd()));
-                distributedExperiment.setNbEvents(distributedExperiment.getNbEvents() + experiment.getNbEvents());
-                distributedExperiment.getTraces().addAll(experiment.getTraces());
+            distributedExperiment.setStart(distributedExperiment.getEnd().min(experiment.getEnd()));
+            distributedExperiment.setEnd(distributedExperiment.getEnd().max(experiment.getEnd()));
+            distributedExperiment.setNbEvents(distributedExperiment.getNbEvents() + experiment.getNbEvents());
+            distributedExperiment.getTraces().addAll(experiment.getTraces());
+            if (distributedExperiment.getIndexingStatus() != IndexingStatus.RUNNING
+                    && experiment.getIndexingStatus() == IndexingStatus.RUNNING) {
+                distributedExperiment.setIndexingStatus(IndexingStatus.RUNNING);
             }
+
         });
+
         return distributedExperiment;
     }
 }
