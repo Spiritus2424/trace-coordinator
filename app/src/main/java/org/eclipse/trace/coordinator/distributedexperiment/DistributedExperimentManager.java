@@ -1,4 +1,4 @@
-package org.eclipse.trace.coordinator.experiment;
+package org.eclipse.trace.coordinator.distributedexperiment;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.eclipse.trace.coordinator.configuration.Configuration;
-import org.eclipse.trace.coordinator.experiment.properties.ExperimentProperties;
+import org.eclipse.trace.coordinator.distributedexperiment.properties.DistributedExperimentProperties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -28,11 +28,12 @@ public class DistributedExperimentManager {
         ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
         try {
-            List<ExperimentProperties> listOfExperimentProperties = objectMapper
-                    .readValue(file, Configuration.class).getExperimentProperties();
-            for (ExperimentProperties experimentProperties : listOfExperimentProperties) {
+            List<DistributedExperimentProperties> listOfDistributedExperimentProperties = objectMapper
+                    .readValue(file, Configuration.class).getDistributedExperimentProperties();
+            for (DistributedExperimentProperties experimentProperties : listOfDistributedExperimentProperties) {
                 DistributedExperiment distributedExperiment = experimentProperties.toObject();
-                this.distributedExperiments.put(distributedExperiment.getUuid(), distributedExperiment);
+                this.distributedExperiments.put(UUID.fromString(distributedExperiment.getName()),
+                        distributedExperiment);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,7 +57,7 @@ public class DistributedExperimentManager {
     }
 
     public DistributedExperiment addDistributedExperiment(DistributedExperiment distributedExperiment) {
-        return this.distributedExperiments.put(distributedExperiment.getUuid(), distributedExperiment);
+        return this.distributedExperiments.put(UUID.fromString(distributedExperiment.getName()), distributedExperiment);
     }
 
     public DistributedExperiment removeDistributedExperiment(UUID uuid) {
