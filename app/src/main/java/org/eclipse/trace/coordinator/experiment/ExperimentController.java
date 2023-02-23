@@ -125,7 +125,8 @@ public class ExperimentController {
             List<Trace> traces = traceService.getTraces(traceServer);
             List<UUID> traceServerTracesUuid = new ArrayList<>();
             for (Trace trace : traces) {
-                for (UUID traceUuid : (ArrayList<UUID>) query.getParameters().get("traces")) {
+                for (String traceString : (ArrayList<String>) query.getParameters().get("traces")) {
+                    UUID traceUuid = UUID.fromString(traceString);
                     if (trace.getUuid().equals(traceUuid)) {
                         traceServerTracesUuid.add(traceUuid);
                     }
