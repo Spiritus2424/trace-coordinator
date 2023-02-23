@@ -48,6 +48,7 @@ public class ExperimentController {
 
     @PostConstruct
     public void createExperiments() {
+
         // for (DistributedExperiment distributedExperiment :
         // distributedExperimentManager.getDistributedExperiments()
         // .values()) {
@@ -66,13 +67,25 @@ public class ExperimentController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getExperiments() {
-        List<Experiment> experiments = new ArrayList<>();
+        Map<UUID, List<Experiment>> experimentGroupByUuid = new HashMap<>();
 
         for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            experiments.addAll(this.experimentService.getExperiments(traceServer));
+            List<Experiment> experiments = this.experimentService.getExperiments(traceServer);
+            for (Experiment experiment : experiments) {
+                if (!experimentGroupByUuid.containsKey(experiment.getUuid())) {
+                    experimentGroupByUuid.put(experiment.getUuid(), new ArrayList<>());
+                }
+
+                experimentGroupByUuid.get(experiment.getUuid()).add(experiment);
+            }
         }
 
-        return Response.ok(experiments).build();
+        List<Experiment> distributedExperiments = new ArrayList<>();
+        for (List<Experiment> experiments : experimentGroupByUuid.values()) {
+            distributedExperiments.add(ExperimentFactory.createExperiment(experiments));
+        }
+
+        return Response.ok(distributedExperiments).build();
     }
 
     @GET
@@ -80,16 +93,20 @@ public class ExperimentController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid) {
-        Response response = null;
+        List<Experiment> experiments = new ArrayList<>();
 
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
             Experiment experiment = experimentService.getExperiment(traceServer, experimentUuid);
             if (experiment != null) {
-                response = Response.ok(experiment).build();
-                break;
-            } else {
-                response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+                experiments.add(experiment);
             }
+        }
+
+        Response response = null;
+        if (experiments.size() != 0) {
+            response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
+        } else {
+            response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();
         }
 
         return response;
@@ -101,14 +118,14 @@ public class ExperimentController {
     @SuppressWarnings("unchecked")
     public Response createExperiment(@NotNull Query query) {
         List<Experiment> experiments = new ArrayList<>();
-
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("name", query.getParameters().get("name"));
+
         for (TraceServer traceServer : traceServerManager.getTraceServers()) {
             List<Trace> traces = traceService.getTraces(traceServer);
-            List<String> traceServerTracesUuid = new ArrayList<>();
+            List<UUID> traceServerTracesUuid = new ArrayList<>();
             for (Trace trace : traces) {
-                for (String traceUuid : (ArrayList<String>) query.getParameters().get("traces")) {
+                for (UUID traceUuid : (ArrayList<UUID>) query.getParameters().get("traces")) {
                     if (trace.getUuid().equals(traceUuid)) {
                         traceServerTracesUuid.add(traceUuid);
                     }
@@ -121,7 +138,7 @@ public class ExperimentController {
             }
         }
 
-        return Response.ok(experiments).build();
+        return Response.ok(ExperimentFactory.createExperiment(experiments)).build();
     }
 
     @PUT
@@ -145,7 +162,7 @@ public class ExperimentController {
 
         Response response = null;
         if (experiments.size() != 0) {
-            response = Response.ok(experiments).build();
+            response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
         } else {
             response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();
 
