@@ -2,21 +2,20 @@ package org.eclipse.trace.coordinator.distributedexperiment;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public class DistributedExperiment {
+    private String name;
+    private List<String> tracesPath;
 
-    @JsonProperty("traces-uuid")
-    private List<String> tracesUuid;
-
-    public DistributedExperiment() {
+    public DistributedExperiment(String name, List<String> tracesPath) {
+        this.name = name;
+        this.tracesPath = tracesPath;
     }
 
-    public DistributedExperiment(List<String> tracesUuid) {
-        this.tracesUuid = tracesUuid;
+    public String getName() {
+        return name;
     }
 
-    public List<String> getTracesUuid() {
-        return tracesUuid;
+    public List<String> getTracesPath() {
+        return tracesPath;
     }
 }

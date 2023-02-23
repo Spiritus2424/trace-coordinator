@@ -1,40 +1,35 @@
 package org.eclipse.trace.coordinator.traceserver;
 
+import java.net.URI;
 import java.util.List;
 
 import org.eclipse.tsp.java.client.protocol.tspclient.TspClient;
 
 public class TraceServer {
-    private String url;
+    private URI uri;
     private String port;
     private List<String> tracesPath;
     private TspClient tspClient;
 
-    public TraceServer(String url, String port, List<String> tracesPath) {
-        this.url = url;
+    public TraceServer(String host, String port, List<String> tracesPath) {
+        this.uri = URI.create(String.format("%s:%s", host, port));
         this.port = port;
         this.tracesPath = tracesPath;
-        this.tspClient = new TspClient(getUrlWithPort());
+
+        this.tspClient = new TspClient(this.uri.toString());
+
     }
 
-    public String getUrlWithPort() {
-        return String.format("%s:%s", this.url, this.port);
+    public URI getUri() {
+        return this.uri;
     }
 
-    public String getUrl() {
-        return this.url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public String getHost() {
+        return this.uri.getHost();
     }
 
     public String getPort() {
         return this.port;
-    }
-
-    public void setPort(String port) {
-        this.port = port;
     }
 
     public List<String> getTracesPath() {
