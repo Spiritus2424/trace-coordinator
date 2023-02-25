@@ -50,7 +50,7 @@ public class OutputDescriptorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getOutputDescriptor(@NotNull @PathParam("expUUID") UUID experimentUuid,
-            @NotNull @PathParam("outputId") UUID outputId) {
+            @NotNull @PathParam("outputId") String outputId) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 }
