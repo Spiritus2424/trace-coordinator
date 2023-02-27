@@ -36,7 +36,7 @@ import jakarta.ws.rs.core.Response;
 public class AnnotationController {
 
     @Inject
-    TraceServerManager traceServerManager;
+    private TraceServerManager traceServerManager;
 
     @Inject
     private AnnotationService annotationService;
