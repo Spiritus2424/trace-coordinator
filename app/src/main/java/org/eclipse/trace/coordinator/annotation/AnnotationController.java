@@ -1,14 +1,19 @@
 package org.eclipse.trace.coordinator.annotation;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
+import org.eclipse.tsp.java.client.models.annotation.Annotation;
 import org.eclipse.tsp.java.client.models.annotation.AnnotationCategoriesModel;
+import org.eclipse.tsp.java.client.models.annotation.AnnotationModel;
 import org.eclipse.tsp.java.client.models.query.Query;
 import org.eclipse.tsp.java.client.models.response.GenericResponse;
 import org.eclipse.tsp.java.client.models.response.ResponseStatus;
@@ -69,6 +74,24 @@ public class AnnotationController {
     public Response getAnnotation(@PathParam("expUUID") UUID experimentUuid,
             @PathParam("outputId") String outputId, @NotNull Query query) {
 
-        return Response.ok().build();
+        Map<String, List<Annotation>> annotationsModels = new HashMap<>();
+        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
+        String statusMessage = null;
+        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+            GenericResponse<AnnotationModel> genericResponse = this.annotationService.getAnnotationModel(traceServer,
+                    experimentUuid, outputId, query);
+            if (responseStatus != ResponseStatus.RUNNING) {
+                responseStatus = genericResponse.getStatus();
+                statusMessage = genericResponse.getMessage();
+            }
+            if (genericResponse.getModel() != null) {
+
+                annotationsModels.putAll(genericResponse.getModel().getAnnotations());
+            }
+        }
+
+        return Response.ok(new GenericResponse<AnnotationModel>(
+                new AnnotationModel(annotationsModels), responseStatus, statusMessage))
+                .build();
     }
 }
