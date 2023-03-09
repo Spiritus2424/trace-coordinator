@@ -10,7 +10,7 @@ public class ExperimentFactory {
     public static Experiment createExperiment(List<Experiment> experiments) {
         Experiment distributedExperiment = experiments.get(0);
         experiments.stream().skip(1).forEach((Experiment experiment) -> {
-            distributedExperiment.setStart(distributedExperiment.getEnd().min(experiment.getEnd()));
+            distributedExperiment.setStart(distributedExperiment.getStart().min(experiment.getStart()));
             distributedExperiment.setEnd(distributedExperiment.getEnd().max(experiment.getEnd()));
             distributedExperiment.setNbEvents(distributedExperiment.getNbEvents() + experiment.getNbEvents());
             distributedExperiment.getTraces().addAll(experiment.getTraces());

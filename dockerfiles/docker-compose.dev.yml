@@ -38,3 +38,13 @@ services:
       - ${PWD}/traces/103-compare-package-managers/zypper:/zypper:ro
     ports:
       - "8084:8080"
+  trace-server-5:
+    container_name: Trace-Server-5
+    image: trace-server
+    volumes:
+      - ${PWD}/traces/103-compare-package-managers/apt:/apt:ro
+      - ${PWD}/traces/103-compare-package-managers/pacman:/pacman:ro
+      - ${PWD}/traces/103-compare-package-managers/yum:/yum:ro
+      - ${PWD}/traces/103-compare-package-managers/zypper:/zypper:ro
+    ports:
+      - "8085:8080"
