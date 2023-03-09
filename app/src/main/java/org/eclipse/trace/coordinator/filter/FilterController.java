@@ -1,9 +1,7 @@
-package org.eclipse.trace.coordinator.bookmark;
-
-import java.util.UUID;
+package org.eclipse.trace.coordinator.filter;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.bookmark.Bookmark;
+import org.eclipse.tsp.java.client.models.filter.Filter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,11 +17,12 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-@Path("experiments/{expUUID}/bookmarks")
+@Path("filters")
 @ApplicationScoped
-public class BookmarkController {
+public class FilterController {
+
     @Inject
-    private BookmarkService bookmarkService;
+    private FilterService filterService;
 
     @Inject
     private TraceServerManager traceServerManager;
@@ -31,40 +30,39 @@ public class BookmarkController {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookmarks(@PathParam("expUUID") UUID experimentUuid) {
+    public Response getFilters() {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @GET
-    @Path("{bookmarkId}")
+    @Path("{filterId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookmark(@PathParam("expUUID") UUID experimentUuid, @PathParam("bookmarkId") UUID bookmarkUuid) {
+    public Response getFilter(@PathParam("filterId") String filterId) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBookmark(@PathParam("expUUID") UUID experimentUuid, Bookmark bookmark) {
+    public Response createFilter(Filter Filter) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @PUT
-    @Path("{bookmarkId}")
+    @Path("{filterId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateBookmark(@PathParam("expUUID") UUID experimentUuid,
-            @PathParam("bookmarkId") UUID bookmarkUuid, Bookmark bookmark) {
+    public Response updateFilter(@PathParam("filterId") String filterId, Filter filter) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @DELETE
-    @Path("{bookmarkId}")
+    @Path("{filterId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteBookmark(@PathParam("expUUID") UUID experimentUuid,
-            @PathParam("bookmarkId") UUID bookmarkUuid) {
+    public Response deleteFilter(@PathParam("filterId") String filterId) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
+
 }
