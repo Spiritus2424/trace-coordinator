@@ -6,7 +6,7 @@ import jakarta.ws.rs.Path;
 /**
  * StyleController
  */
-@Path("")
+@Path("experiments/{expUUID}/outputs/{outputId}/style")
 @ApplicationScoped
 public class StyleController {
 
