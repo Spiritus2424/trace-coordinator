@@ -49,7 +49,6 @@ public class XyController {
         String title = null;
         ResponseStatus responseStatus = ResponseStatus.COMPLETED;
         String statusMessage = null;
-        int increment = 0;
         for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
             GenericResponse<XYModel> genericResponse = this.xyService.getXy(traceServer, experimentUuid, outputId,
                     query);
@@ -60,19 +59,11 @@ public class XyController {
             }
 
             if (genericResponse.getModel() != null) {
-                if (genericResponse.getModel().getSeries().size() == 1) {
-                    genericResponse.getModel().getSeries().get(0).setSerieName(
-                            genericResponse.getModel().getSeries().get(0).getSerieName()
-                                    .concat(String.valueOf(increment++)));
-                }
                 series.addAll(genericResponse.getModel().getSeries());
             }
 
             if (title == null) {
                 title = genericResponse.getModel().getTitle();
-            } else if (!title.equals(genericResponse.getModel().getTitle())) {
-                System.out.println("New Title");
-                System.out.println(genericResponse.getModel().getTitle());
             }
         }
 
