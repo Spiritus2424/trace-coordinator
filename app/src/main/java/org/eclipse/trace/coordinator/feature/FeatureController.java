@@ -1,4 +1,4 @@
-package org.eclipse.trace.coordinator.features;
+package org.eclipse.trace.coordinator.feature;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 
