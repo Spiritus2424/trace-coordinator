@@ -8,14 +8,14 @@ import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.entry.Entry;
-import org.eclipse.tsp.java.client.models.entry.EntryHeader;
-import org.eclipse.tsp.java.client.models.entry.EntryModel;
-import org.eclipse.tsp.java.client.models.query.Query;
-import org.eclipse.tsp.java.client.models.response.GenericResponse;
-import org.eclipse.tsp.java.client.models.response.ResponseStatus;
-import org.eclipse.tsp.java.client.models.xy.XYModel;
-import org.eclipse.tsp.java.client.models.xy.XYSerie;
+import org.eclipse.tsp.java.client.api.xy.XyModel;
+import org.eclipse.tsp.java.client.api.xy.XySerie;
+import org.eclipse.tsp.java.client.shared.entry.Entry;
+import org.eclipse.tsp.java.client.shared.entry.EntryHeader;
+import org.eclipse.tsp.java.client.shared.entry.EntryModel;
+import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.shared.response.GenericResponse;
+import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -45,12 +45,12 @@ public class XyController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getXy(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
             Query query) {
-        List<XYSerie> series = new ArrayList<>();
+        List<XySerie> series = new ArrayList<>();
         String title = null;
         ResponseStatus responseStatus = ResponseStatus.COMPLETED;
         String statusMessage = null;
         for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            GenericResponse<XYModel> genericResponse = this.xyService.getXy(traceServer, experimentUuid, outputId,
+            GenericResponse<XyModel> genericResponse = this.xyService.getXy(traceServer, experimentUuid, outputId,
                     query);
 
             if (responseStatus != ResponseStatus.RUNNING) {
@@ -67,7 +67,7 @@ public class XyController {
             }
         }
 
-        return Response.ok(new GenericResponse<XYModel>(new XYModel(title, series), responseStatus, statusMessage))
+        return Response.ok(new GenericResponse<XyModel>(new XyModel(title, series), responseStatus, statusMessage))
                 .build();
     }
 
