@@ -3,7 +3,6 @@ package org.eclipse.trace.coordinator.filter;
 import java.util.List;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
-import org.eclipse.tsp.java.client.api.bookmark.Bookmark;
 import org.eclipse.tsp.java.client.api.filter.Filter;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,7 +18,7 @@ public class FilterService {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Filter createFilter(TraceServer traceServer, Bookmark bookmark) {
+    public Filter createFilter(TraceServer traceServer, Filter filter) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
