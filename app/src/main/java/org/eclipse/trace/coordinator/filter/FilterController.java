@@ -1,7 +1,7 @@
 package org.eclipse.trace.coordinator.filter;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.filter.Filter;
+import org.eclipse.tsp.java.client.api.filter.Filter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
