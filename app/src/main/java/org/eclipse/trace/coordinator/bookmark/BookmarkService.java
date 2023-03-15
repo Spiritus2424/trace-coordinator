@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
-import org.eclipse.tsp.java.client.models.bookmark.Bookmark;
+import org.eclipse.tsp.java.client.api.bookmark.Bookmark;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
