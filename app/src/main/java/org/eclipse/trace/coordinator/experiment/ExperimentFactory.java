@@ -2,8 +2,8 @@ package org.eclipse.trace.coordinator.experiment;
 
 import java.util.List;
 
-import org.eclipse.tsp.java.client.models.experiment.Experiment;
-import org.eclipse.tsp.java.client.models.indexing.IndexingStatus;
+import org.eclipse.tsp.java.client.api.experiment.Experiment;
+import org.eclipse.tsp.java.client.shared.indexing.IndexingStatus;
 
 public class ExperimentFactory {
 

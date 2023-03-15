@@ -6,9 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
-import org.eclipse.tsp.java.client.models.experiment.Experiment;
-import org.eclipse.tsp.java.client.models.query.Query;
-import org.eclipse.tsp.java.client.protocol.restclient.TspClientResponse;
+import org.eclipse.tsp.java.client.api.experiment.Experiment;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
+import org.eclipse.tsp.java.client.shared.query.Query;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -16,7 +16,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class ExperimentService {
 
     public List<Experiment> getExperiments(TraceServer traceServer) {
-        TspClientResponse<Experiment[]> response = traceServer.getTspClient().getExperiments(Optional.empty());
+        TspClientResponse<Experiment[]> response = traceServer.getTspClient().getExperimentApi()
+                .getExperiments(Optional.empty());
 
         List<Experiment> experiments = new ArrayList<>();
         if (response.isOk() && response.getResponseModel() != null) {
@@ -29,7 +30,8 @@ public class ExperimentService {
     }
 
     public Experiment getExperiment(TraceServer traceServer, UUID experimentUuid) {
-        TspClientResponse<Experiment> response = traceServer.getTspClient().getExperiment(experimentUuid);
+        TspClientResponse<Experiment> response = traceServer.getTspClient().getExperimentApi()
+                .getExperiment(experimentUuid);
 
         Experiment experiment = null;
         if (response.isOk() && response.getResponseModel() != null) {
@@ -40,7 +42,7 @@ public class ExperimentService {
     }
 
     public Experiment createExperiment(TraceServer traceServer, Query query) {
-        TspClientResponse<Experiment> response = traceServer.getTspClient().createExperiment(query);
+        TspClientResponse<Experiment> response = traceServer.getTspClient().getExperimentApi().createExperiment(query);
 
         Experiment experiment = null;
         if (response.isOk() && response.getResponseModel() != null) {
@@ -51,7 +53,8 @@ public class ExperimentService {
     }
 
     public Experiment updateExperiment(TraceServer traceServer, UUID experimentUuid, Query query) {
-        TspClientResponse<Experiment> response = traceServer.getTspClient().updateExperiment(experimentUuid, query);
+        TspClientResponse<Experiment> response = traceServer.getTspClient().getExperimentApi()
+                .updateExperiment(experimentUuid, query);
 
         Experiment experiment = null;
         if (response.isOk() && response.getResponseModel() != null) {
@@ -63,7 +66,8 @@ public class ExperimentService {
     }
 
     public Experiment deleteExperiment(TraceServer traceServer, UUID experimentUuid) {
-        TspClientResponse<Experiment> response = traceServer.getTspClient().deleteExperiment(experimentUuid);
+        TspClientResponse<Experiment> response = traceServer.getTspClient().getExperimentApi()
+                .deleteExperiment(experimentUuid);
 
         Experiment experiment = null;
         if (response.isOk() && response.getResponseModel() != null) {
