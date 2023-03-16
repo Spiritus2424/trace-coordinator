@@ -3,7 +3,7 @@ package org.eclipse.trace.coordinator.bookmark;
 import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.bookmark.Bookmark;
+import org.eclipse.tsp.java.client.api.bookmark.Bookmark;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

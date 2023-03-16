@@ -8,8 +8,8 @@ import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.query.Query;
-import org.eclipse.tsp.java.client.models.trace.Trace;
+import org.eclipse.tsp.java.client.api.trace.Trace;
+import org.eclipse.tsp.java.client.shared.query.Query;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;

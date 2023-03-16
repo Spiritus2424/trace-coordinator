@@ -7,9 +7,9 @@ import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.markerset.MarkerSet;
-import org.eclipse.tsp.java.client.models.response.GenericResponse;
-import org.eclipse.tsp.java.client.models.response.ResponseStatus;
+import org.eclipse.tsp.java.client.api.markerset.MarkerSet;
+import org.eclipse.tsp.java.client.shared.response.GenericResponse;
+import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

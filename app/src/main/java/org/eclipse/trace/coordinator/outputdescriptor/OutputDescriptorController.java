@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.outputdescriptor.OutputDescriptor;
+import org.eclipse.tsp.java.client.api.outputdescriptor.OutputDescriptor;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

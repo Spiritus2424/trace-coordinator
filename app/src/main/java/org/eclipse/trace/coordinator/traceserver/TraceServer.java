@@ -3,7 +3,7 @@ package org.eclipse.trace.coordinator.traceserver;
 import java.net.URI;
 import java.util.List;
 
-import org.eclipse.tsp.java.client.protocol.tspclient.TspClient;
+import org.eclipse.tsp.java.client.core.tspclient.TspClient;
 
 public class TraceServer {
     private URI uri;

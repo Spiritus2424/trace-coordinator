@@ -1,9 +1,9 @@
 package org.eclipse.trace.coordinator.diagnostic;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
-import org.eclipse.tsp.java.client.models.health.Health;
-import org.eclipse.tsp.java.client.models.health.HealthStatus;
-import org.eclipse.tsp.java.client.protocol.restclient.TspClientResponse;
+import org.eclipse.tsp.java.client.api.health.Health;
+import org.eclipse.tsp.java.client.api.health.HealthStatus;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -11,7 +11,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class DiagnosticService {
 
     public Health getStatus(TraceServer traceServer) {
-        TspClientResponse<Health> response = traceServer.getTspClient().checkHealth();
+        TspClientResponse<Health> response = traceServer.getTspClient().getHealthApi().checkHealth();
         Health health = new Health(HealthStatus.UP);
         if (response.getResponseModel().getStatus() == HealthStatus.DOWN) {
             health.setStatus(HealthStatus.DOWN);

@@ -2,8 +2,8 @@ package org.eclipse.trace.coordinator.diagnostic;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.models.health.Health;
-import org.eclipse.tsp.java.client.models.health.HealthStatus;
+import org.eclipse.tsp.java.client.api.health.Health;
+import org.eclipse.tsp.java.client.api.health.HealthStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
