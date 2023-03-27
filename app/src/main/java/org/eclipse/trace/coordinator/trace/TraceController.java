@@ -31,7 +31,7 @@ import jakarta.ws.rs.core.Response.Status;
 public class TraceController {
 
     @Inject
-    TraceService traceService;
+    private TraceService traceService;
 
     @Inject
     private TraceServerManager traceServerManager;
