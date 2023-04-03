@@ -145,6 +145,7 @@ public class TimeGraphController {
             }
 
             if (genericResponse.getModel() != null) {
+
                 headers.addAll(genericResponse.getModel().getHeaders());
                 entries.addAll(genericResponse.getModel().getEntries());
             }
