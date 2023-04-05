@@ -6,6 +6,9 @@ import java.util.List;
 import org.eclipse.tsp.java.client.core.tspclient.TspClient;
 
 public class TraceServer {
+    private static int NUMBER_OF_TRACE_SERVER = 0;
+
+    private final int id;
     private URI uri;
     private String port;
     private List<String> tracesPath;
@@ -18,6 +21,11 @@ public class TraceServer {
 
         this.tspClient = new TspClient(this.uri.toString());
 
+        this.id = TraceServer.NUMBER_OF_TRACE_SERVER++;
+    }
+
+    public int getId() {
+        return this.id;
     }
 
     public URI getUri() {
@@ -38,6 +46,14 @@ public class TraceServer {
 
     public TspClient getTspClient() {
         return tspClient;
+    }
+
+    public int encodeEntryId(int entryId) {
+        return entryId + (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER) * this.id;
+    }
+
+    public int decodeEntryId(int id) {
+        return id - (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER) * this.id;
     }
 
 }
