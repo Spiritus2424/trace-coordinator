@@ -30,7 +30,8 @@ public class DiagnosticController {
     @Path("health")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHealthStatus() {
-        Health healthMerged = traceServerManager.getTraceServers()
+
+        Health healthMerged = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
                 .collect(Collectors.toList())
@@ -44,4 +45,5 @@ public class DiagnosticController {
 
         return Response.ok(healthMerged).build();
     }
+
 }
