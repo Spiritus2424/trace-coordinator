@@ -46,7 +46,7 @@ public class AnnotationController {
         GenericResponse<AnnotationCategoriesModel> genericResponseMerged = this.traceServerManager
                 .getTraceServers()
                 .stream()
-                .map((TraceServer traceServer) -> this.annotationService.getAnnotationCategoriesAsync(traceServer,
+                .map((TraceServer traceServer) -> this.annotationService.getAnnotationCategories(traceServer,
                         experimentUuid, outputId, markerSetId != null ? Optional.of(markerSetId) : Optional.empty()))
                 .collect(Collectors.toList())
                 .stream()
@@ -81,7 +81,7 @@ public class AnnotationController {
         GenericResponse<AnnotationModel> genericResponseMerged = this.traceServerManager
                 .getTraceServers()
                 .stream()
-                .map((TraceServer traceServer) -> this.annotationService.getAnnotationModelAsync(traceServer,
+                .map((TraceServer traceServer) -> this.annotationService.getAnnotationModel(traceServer,
                         experimentUuid, outputId, query))
                 .collect(Collectors.toList())
                 .stream()
