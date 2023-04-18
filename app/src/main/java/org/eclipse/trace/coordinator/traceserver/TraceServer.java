@@ -48,12 +48,25 @@ public class TraceServer {
         return tspClient;
     }
 
-    public int encodeEntryId(int entryId) {
-        return entryId + (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER) * this.id;
+    public int encodeEntryId(int entryId) throws ArithmeticException {
+        final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+        if (entryId > step) {
+            throw new ArithmeticException("The entry id is too big");
+        }
+        return entryId + step * this.id;
     }
 
-    public int decodeEntryId(int id) {
-        return id - (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER) * this.id;
+    public int decodeEntryId(int encodeEntryId) throws ArithmeticException {
+        if (!isValidEncodeEntryId(encodeEntryId)) {
+            throw new ArithmeticException("The encode entry id is not valid");
+        }
+        final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+        return encodeEntryId - step * this.id;
+    }
+
+    private boolean isValidEncodeEntryId(int encodeEntryId) {
+        final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+        return encodeEntryId >= step * this.id && encodeEntryId < step * (this.id + 1);
     }
 
 }
