@@ -37,17 +37,19 @@ repositories {
 
 
 dependencies {
-    // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
-    // This dependency is used by the application.
+    // Jakarta
     providedCompile("jakarta.platform:jakarta.jakartaee-api:10.0.0")
     
-    implementation("org.eclipse:tsp-java-client-insiders:v2.0.4-alpha")
-    
+    // Tsp Java Client
+    implementation("org.eclipse:tsp-java-client-insiders:v2.0.6-alpha")
+
+    // Jackson
     implementation("com.fasterxml.jackson.core:jackson-databind:2.14.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.1")
 
+    // JUnit Jupiter
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 }
 
 
