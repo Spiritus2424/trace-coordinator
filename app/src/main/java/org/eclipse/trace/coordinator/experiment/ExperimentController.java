@@ -1,13 +1,17 @@
 package org.eclipse.trace.coordinator.experiment;
 
+import static java.util.stream.Collectors.groupingBy;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.trace.TraceService;
-import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.experiment.Experiment;
 import org.eclipse.tsp.java.client.api.trace.Trace;
@@ -67,23 +71,17 @@ public class ExperimentController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getExperiments() {
-        Map<UUID, List<Experiment>> experimentGroupByUuid = new HashMap<>();
-
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            List<Experiment> experiments = this.experimentService.getExperiments(traceServer);
-            for (Experiment experiment : experiments) {
-                if (!experimentGroupByUuid.containsKey(experiment.getUuid())) {
-                    experimentGroupByUuid.put(experiment.getUuid(), new ArrayList<>());
-                }
-
-                experimentGroupByUuid.get(experiment.getUuid()).add(experiment);
-            }
-        }
-
-        List<Experiment> distributedExperiments = new ArrayList<>();
-        for (List<Experiment> experiments : experimentGroupByUuid.values()) {
-            distributedExperiments.add(ExperimentFactory.createExperiment(experiments));
-        }
+        List<Experiment> distributedExperiments = this.traceServerManager.getTraceServers().stream()
+                .map(traceSercer -> {
+                    return this.experimentService.getExperiments(traceSercer);
+                })
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(groupingBy(Experiment::getUuid))
+                .values()
+                .stream()
+                .map(ExperimentFactory::createExperiment)
+                .collect(Collectors.toList());
 
         return Response.ok(distributedExperiments).build();
     }
@@ -93,14 +91,12 @@ public class ExperimentController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid) {
-        List<Experiment> experiments = new ArrayList<>();
-
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            Experiment experiment = experimentService.getExperiment(traceServer, experimentUuid);
-            if (experiment != null) {
-                experiments.add(experiment);
-            }
-        }
+        List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
+                .map(traceSercer -> {
+                    return this.experimentService.getExperiment(traceSercer, experimentUuid);
+                })
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
 
         Response response = null;
         if (experiments.size() != 0) {
@@ -117,27 +113,28 @@ public class ExperimentController {
     @Consumes(MediaType.APPLICATION_JSON)
     @SuppressWarnings("unchecked")
     public Response createExperiment(@NotNull Query query) {
-        List<Experiment> experiments = new ArrayList<>();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("name", query.getParameters().get("name"));
+        final String experimentName = (String) query.getParameters().get("name");
+        final Set<UUID> traceUuids = ((ArrayList<String>) query.getParameters().get("traces")).stream()
+                .map((String traceUuid) -> UUID.fromString(traceUuid))
+                .collect(Collectors.toSet());
+        final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
+                .map(traceServer -> {
+                    return this.traceService.getTraces(traceServer)
+                            .thenApply((List<Trace> traces) -> {
+                                List<UUID> traceServerTracesUuid = traces.stream()
+                                        .filter((Trace trace) -> traceUuids.contains(trace.getUuid()))
+                                        .map((Trace trace) -> trace.getUuid())
+                                        .collect(Collectors.toList());
 
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            List<Trace> traces = traceService.getTraces(traceServer);
-            List<UUID> traceServerTracesUuid = new ArrayList<>();
-            for (Trace trace : traces) {
-                for (String traceString : (ArrayList<String>) query.getParameters().get("traces")) {
-                    UUID traceUuid = UUID.fromString(traceString);
-                    if (trace.getUuid().equals(traceUuid)) {
-                        traceServerTracesUuid.add(traceUuid);
-                    }
-                }
-            }
-
-            if (traceServerTracesUuid.size() > 0) {
-                parameters.put("traces", traceServerTracesUuid);
-                experiments.add(experimentService.createExperiment(traceServer, new Query(parameters)));
-            }
-        }
+                                Map<String, Object> parameters = new HashMap<>();
+                                parameters.put("name", experimentName);
+                                parameters.put("traces", traceServerTracesUuid);
+                                return this.experimentService.createExperiment(traceServer, new Query(parameters))
+                                        .join();
+                            });
+                })
+                .map(CompletableFuture::join)
+                .toList();
 
         return Response.ok(ExperimentFactory.createExperiment(experiments)).build();
     }
@@ -156,17 +153,16 @@ public class ExperimentController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Path("{expUUID}")
     public Response deleteExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid) {
-        List<Experiment> experiments = new ArrayList<>();
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            experiments.add(experimentService.deleteExperiment(traceServer, experimentUuid));
-        }
+        List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
+                .map(traceServer -> this.experimentService.deleteExperiment(traceServer, experimentUuid))
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
 
         Response response = null;
         if (experiments.size() != 0) {
             response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
         } else {
             response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();
-
         }
 
         return response;
