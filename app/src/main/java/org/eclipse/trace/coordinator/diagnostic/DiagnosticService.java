@@ -12,6 +12,6 @@ public class DiagnosticService {
 
     public CompletableFuture<Health> getStatus(TraceServer traceServer) {
         return traceServer.getTspClient().getHealthApiAsync().checkHealth()
-                .thenApply(result -> result.getResponseModel());
+                .thenApply(response -> response.getResponseModel());
     }
 }

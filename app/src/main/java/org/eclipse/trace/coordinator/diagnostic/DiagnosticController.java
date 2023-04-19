@@ -1,7 +1,6 @@
 package org.eclipse.trace.coordinator.diagnostic;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
@@ -34,11 +33,7 @@ public class DiagnosticController {
         Health healthMerged = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
-                .collect(Collectors.toList())
-                .stream()
                 .map(CompletableFuture::join)
-                .collect(Collectors.toList())
-                .stream()
                 .filter(health -> health.getStatus() == HealthStatus.DOWN)
                 .findFirst()
                 .isPresent() ? new Health(HealthStatus.DOWN) : new Health(HealthStatus.UP);
