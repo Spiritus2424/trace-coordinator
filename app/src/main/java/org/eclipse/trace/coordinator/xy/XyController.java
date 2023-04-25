@@ -2,14 +2,13 @@ package org.eclipse.trace.coordinator.xy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.xy.XyModel;
-import org.eclipse.tsp.java.client.api.xy.XySerie;
 import org.eclipse.tsp.java.client.shared.entry.Entry;
 import org.eclipse.tsp.java.client.shared.entry.EntryHeader;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
@@ -45,30 +44,28 @@ public class XyController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getXy(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
             Query query) {
-        List<XySerie> series = new ArrayList<>();
-        String title = null;
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            GenericResponse<XyModel> genericResponse = this.xyService.getXy(traceServer, experimentUuid, outputId,
-                    query);
+        GenericResponse<XyModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.xyService.getXy(traceServer, experimentUuid, outputId, query))
+                .map(CompletableFuture::join)
+                .reduce(null, (accumulator, genericResponse) -> {
+                    if (accumulator == null) {
+                        accumulator = genericResponse;
+                    } else {
+                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+                            accumulator.setStatus(genericResponse.getStatus());
+                            accumulator.setMessage(genericResponse.getMessage());
+                        }
 
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
+                        if (genericResponse.getModel() != null) {
+                            accumulator.getModel().getSeries().addAll(genericResponse.getModel().getSeries());
+                        }
+                    }
 
-            if (genericResponse.getModel() != null) {
-                series.addAll(genericResponse.getModel().getSeries());
-            }
+                    return accumulator;
+                });
 
-            if (title == null) {
-                title = genericResponse.getModel().getTitle();
-            }
-        }
-
-        return Response.ok(new GenericResponse<XyModel>(new XyModel(title, series), responseStatus, statusMessage))
-                .build();
+        return Response.ok(genericResponseMerged).build();
     }
 
     @POST
@@ -78,36 +75,30 @@ public class XyController {
     public Response getTree(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
             Query query) {
         Set<EntryHeader> headers = new HashSet<>();
-        List<Entry> entries = new ArrayList<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
+        GenericResponse<EntryModel<Entry>> genericResponseMerged = this.traceServerManager.getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.xyService.getTree(traceServer, experimentUuid, outputId, query))
+                .map(CompletableFuture::join)
+                .reduce(null, (accumulator, genericResponse) -> {
+                    if (accumulator == null) {
+                        accumulator = genericResponse;
+                    } else {
+                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+                            accumulator.setStatus(genericResponse.getStatus());
+                            accumulator.setMessage(genericResponse.getMessage());
+                        }
 
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            GenericResponse<EntryModel<Entry>> genericResponse = this.xyService.getTree(traceServer, experimentUuid,
-                    outputId,
-                    query);
+                        if (genericResponse.getModel() != null) {
+                            headers.addAll(genericResponse.getModel().getHeaders());
+                            accumulator.getModel().getEntries().addAll(genericResponse.getModel().getEntries());
+                        }
+                    }
 
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
+                    return accumulator;
+                });
 
-            if (genericResponse.getModel() != null) {
-                headers.addAll(genericResponse.getModel().getHeaders());
-                entries.addAll(genericResponse.getModel().getEntries());
-            }
-
-        }
-        int counter = 0;
-        for (Entry entry : entries) {
-            entry.setId(counter++);
-        }
-
-        return Response
-                .ok(new GenericResponse<EntryModel<Entry>>(new EntryModel<Entry>(new ArrayList<>(headers), entries),
-                        responseStatus,
-                        statusMessage))
-                .build();
+        genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+        return Response.ok(genericResponseMerged).build();
     }
 
     @GET
