@@ -1,9 +1,12 @@
 package org.eclipse.trace.coordinator.timegraph;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.timegraph.TimeGraphArrow;
@@ -21,66 +24,75 @@ public class TimeGraphService {
 	@Inject
 	private TimeGraphAnalysis timeGraphAnalysis;
 
-	public GenericResponse<TimeGraphArrow[]> getArrows(TraceServer traceServer, UUID experimentUuid,
+	public CompletableFuture<GenericResponse<List<TimeGraphArrow>>> getArrows(TraceServer traceServer,
+			UUID experimentUuid,
 			String outputId,
 			Query query) {
-
-		GenericResponse<TimeGraphArrow[]> genericResponse = traceServer.getTspClient().getTimeGraphApi()
-				.getTimeGraphArrows(experimentUuid, outputId, query)
-				.getResponseModel();
-
-		this.timeGraphAnalysis.computeArrows(traceServer, Arrays.asList(genericResponse.getModel()));
-		return genericResponse;
+		return traceServer.getTspClient().getTimeGraphApiAsync()
+				.getTimeGraphArrows(experimentUuid, outputId, query).thenApply(response -> {
+					List<TimeGraphArrow> timeGraphArrows = Arrays.asList(response.getResponseModel().getModel());
+					this.timeGraphAnalysis.computeArrows(traceServer, timeGraphArrows);
+					return new GenericResponse<List<TimeGraphArrow>>(timeGraphArrows,
+							response.getResponseModel().getStatus(),
+							response.getResponseModel().getMessage());
+				});
 	}
 
-	public GenericResponse<TimeGraphModel> getStates(TraceServer traceServer, UUID experimentUuid, String outputId,
+	public CompletableFuture<GenericResponse<TimeGraphModel>> getStates(TraceServer traceServer, UUID experimentUuid,
+			String outputId,
 			Query query) {
-
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("requested_timerange", query.getParameters().get("requested_timerange"));
 		if (query.getParameters().containsKey("requested_items")) {
-			List<Integer> requested_items = (List<Integer>) query.getParameters().get("requested_items");
+			List<Integer> requested_items = List.copyOf((List<Integer>) query.getParameters().get("requested_items"));
 
-			for (int i = 0; i < requested_items.size(); i++) {
-				requested_items.set(i, traceServer.decodeEntryId(requested_items.get(i)));
-			}
-
-			query.getParameters().put("requested_items", requested_items);
+			parameters.put("requested_items", requested_items.stream()
+					.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
+					.map(encodeEntryId -> traceServer.decodeEntryId(encodeEntryId)).collect(Collectors.toList()));
 		}
 
-		GenericResponse<TimeGraphModel> genericResponse = traceServer.getTspClient().getTimeGraphApi()
-				.getTimeGraphStates(experimentUuid, outputId, query)
-				.getResponseModel();
-		this.timeGraphAnalysis.computeStates(traceServer, genericResponse.getModel().getRows());
-		return genericResponse;
+		return traceServer.getTspClient().getTimeGraphApiAsync()
+				.getTimeGraphStates(experimentUuid, outputId, new Query(parameters)).thenApply(response -> {
+					this.timeGraphAnalysis.computeStates(traceServer, response.getResponseModel().getModel().getRows());
+					return response.getResponseModel();
+				});
 	}
 
-	public GenericResponse<Map<String, String>> getTooltips(TraceServer traceServer, UUID experimentUuid,
+	@SuppressWarnings("unchecked")
+	public CompletableFuture<GenericResponse<Map<String, String>>> getTooltips(TraceServer traceServer,
+			UUID experimentUuid,
 			String outputId,
 			Query query) {
-
-		if (query.getParameters().containsKey("requested_items")) {
-			List<Integer> requested_items = (List<Integer>) query.getParameters().get("requested_items");
-
-			for (int i = 0; i < requested_items.size(); i++) {
-				requested_items.set(i, traceServer.decodeEntryId(requested_items.get(i)));
-			}
-
-			query.getParameters().put("requested_items", requested_items);
+		List<Integer> requested_items = List.copyOf((List<Integer>) query.getParameters().get("requested_items"));
+		requested_items = requested_items.stream()
+				.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
+				.map(encodeEntryId -> traceServer.decodeEntryId(encodeEntryId)).collect(Collectors.toList());
+		if (requested_items.isEmpty()) {
+			return null;
 		}
 
-		return traceServer.getTspClient().getTimeGraphApi().getTimeGraphTooltip(experimentUuid, outputId, query)
-				.getResponseModel();
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put("requested_times", query.getParameters().get("requested_times"));
+		parameters.put("requested_element", query.getParameters().get("requested_element"));
+		parameters.put("requested_items", requested_items);
+
+		return traceServer.getTspClient().getTimeGraphApiAsync()
+				.getTimeGraphTooltip(experimentUuid, outputId, new Query(parameters))
+				.thenApply(response -> response.getResponseModel());
 	}
 
-	public GenericResponse<EntryModel<TimeGraphEntry>> getTree(TraceServer traceServer, UUID experimentUuid,
+	public CompletableFuture<GenericResponse<EntryModel<TimeGraphEntry>>> getTree(TraceServer traceServer,
+			UUID experimentUuid,
 			String outputId,
 			Query query) {
-		GenericResponse<EntryModel<TimeGraphEntry>> genericResponse = traceServer.getTspClient()
-				.getTimeGraphApi()
-				.getTimeGraphTree(experimentUuid, outputId, query)
-				.getResponseModel();
-		this.timeGraphAnalysis.computeTrees(traceServer, genericResponse.getModel().getEntries());
+		return traceServer.getTspClient()
+				.getTimeGraphApiAsync()
+				.getTimeGraphTree(experimentUuid, outputId, query).thenApply(response -> {
+					this.timeGraphAnalysis.computeTrees(traceServer,
+							response.getResponseModel().getModel().getEntries());
 
-		return genericResponse;
+					return response.getResponseModel();
+				});
 	}
 
 	public GenericResponse<TimeGraphModel> getNavigations(TraceServer traceServer, UUID experimentUuid,
