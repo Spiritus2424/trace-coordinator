@@ -52,22 +52,34 @@ public class TraceServer {
     public int encodeEntryId(int entryId) throws ArithmeticException {
         final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
         if (entryId > step) {
-            throw new ArithmeticException("The entry id is too big");
+            throw new ArithmeticException(
+                    String.format("The entry id is too big %d, it should be between [%d,%d[ for server %d", entryId,
+                            this.getLowerInterval(), this.getHigherInterval(), this.id));
         }
         return entryId + step * this.id;
     }
 
     public int decodeEntryId(int encodeEntryId) throws ArithmeticException {
         if (!isValidEncodeEntryId(encodeEntryId)) {
-            throw new ArithmeticException("The encode entry id is not valid");
+            throw new ArithmeticException(
+                    String.format("The encode entry id %d is not valid [%d,%d[ for server %d", encodeEntryId,
+                            this.getLowerInterval(), this.getHigherInterval(), this.id));
         }
-        final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
-        return encodeEntryId - step * this.id;
+        return encodeEntryId - this.getLowerInterval();
     }
 
-    private boolean isValidEncodeEntryId(int encodeEntryId) {
+    public boolean isValidEncodeEntryId(int encodeEntryId) {
+        return encodeEntryId >= this.getLowerInterval() && encodeEntryId < this.getHigherInterval();
+    }
+
+    private int getLowerInterval() {
         final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
-        return encodeEntryId >= step * this.id && encodeEntryId < step * (this.id + 1);
+        return step * this.id;
+    }
+
+    private int getHigherInterval() {
+        final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+        return (step * (this.id + 1));
     }
 
 }
