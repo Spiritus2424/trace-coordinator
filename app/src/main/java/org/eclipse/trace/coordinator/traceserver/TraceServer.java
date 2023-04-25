@@ -2,6 +2,7 @@ package org.eclipse.trace.coordinator.traceserver;
 
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import org.eclipse.tsp.java.client.core.tspclient.TspClient;
 
@@ -19,7 +20,7 @@ public class TraceServer {
         this.port = port;
         this.tracesPath = tracesPath;
 
-        this.tspClient = new TspClient(this.uri.toString());
+        this.tspClient = new TspClient(this.uri.toString(), Executors.newFixedThreadPool(10));
 
         this.id = TraceServer.NUMBER_OF_TRACE_SERVER++;
     }
