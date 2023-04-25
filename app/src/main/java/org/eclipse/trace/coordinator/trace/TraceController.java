@@ -30,6 +30,8 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("traces")
 @ApplicationScoped
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class TraceController {
 
     @Inject
@@ -53,8 +55,6 @@ public class TraceController {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getTraces() {
         List<Trace> traces = this.traceServerManager.getTraceServers().stream()
                 .map((TraceServer traceServer) -> this.traceService.getTraces(traceServer))
@@ -67,8 +67,6 @@ public class TraceController {
 
     @GET
     @Path("{uuid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
         Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
                 .map((TraceServer traceServer) -> this.traceService.getTrace(traceServer, traceUuid))
@@ -86,8 +84,6 @@ public class TraceController {
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response openTrace(@NotNull Query query) {
         final String uri = (String) query.getParameters().get("uri");
         List<Trace> traces = this.traceServerManager.getTraceServers().stream()
@@ -122,8 +118,6 @@ public class TraceController {
 
     @DELETE
     @Path("{uuid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response deleteTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
         Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
                 .map((TraceServer traceServer) -> this.traceService.deleteTrace(traceServer, traceUuid))

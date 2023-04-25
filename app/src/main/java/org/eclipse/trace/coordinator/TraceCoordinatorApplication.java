@@ -5,5 +5,4 @@ import jakarta.ws.rs.core.Application;
 
 @ApplicationPath("tsp/api")
 public class TraceCoordinatorApplication extends Application {
-
 }

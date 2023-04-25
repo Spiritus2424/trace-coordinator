@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -36,6 +37,8 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments")
 @ApplicationScoped
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class ExperimentController {
 
     @Inject
@@ -68,8 +71,6 @@ public class ExperimentController {
     }
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getExperiments() {
         List<Experiment> distributedExperiments = this.traceServerManager.getTraceServers().stream()
                 .map(traceSercer -> {
@@ -88,8 +89,6 @@ public class ExperimentController {
 
     @GET
     @Path("{expUUID}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid) {
         List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
                 .map(traceSercer -> {
@@ -109,9 +108,6 @@ public class ExperimentController {
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    @SuppressWarnings("unchecked")
     public Response createExperiment(@NotNull Query query) {
         final String experimentName = (String) query.getParameters().get("name");
         final Set<UUID> traceUuids = ((ArrayList<String>) query.getParameters().get("traces")).stream()
@@ -122,35 +118,34 @@ public class ExperimentController {
                     return this.traceService.getTraces(traceServer)
                             .thenApply((List<Trace> traces) -> {
                                 List<UUID> traceServerTracesUuid = traces.stream()
-                                        .filter((Trace trace) -> traceUuids.contains(trace.getUuid()))
+                                        .filter((Trace trace) -> {
+                                            return traceUuids.contains(trace.getUuid());
+                                        })
                                         .map((Trace trace) -> trace.getUuid())
                                         .collect(Collectors.toList());
 
                                 Map<String, Object> parameters = new HashMap<>();
                                 parameters.put("name", experimentName);
                                 parameters.put("traces", traceServerTracesUuid);
-                                return this.experimentService.createExperiment(traceServer, new Query(parameters))
-                                        .join();
+                                return this.experimentService.createExperiment(traceServer, new Query(parameters));
                             });
                 })
                 .map(CompletableFuture::join)
-                .toList();
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         return Response.ok(ExperimentFactory.createExperiment(experiments)).build();
     }
 
     @PUT
     @Path("{expUUID")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response updateExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid,
             @QueryParam("name") String experimentName, @NotNull Query query) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     @Path("{expUUID}")
     public Response deleteExperiment(@NotNull @PathParam("expUUID") UUID experimentUuid) {
         List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()

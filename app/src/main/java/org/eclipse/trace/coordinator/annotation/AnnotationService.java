@@ -35,10 +35,10 @@ public class AnnotationService {
 
         return traceServer.getTspClient()
                 .getAnnotationApiAsync()
-                .getAnnotations(experimentUuid, outputId, query).thenApply((result) -> {
+                .getAnnotations(experimentUuid, outputId, query).thenApply((response) -> {
                     this.annotationAnalysis.computeAnnotationModel(traceServer,
-                            result.getResponseModel().getModel().getAnnotations());
-                    return result.getResponseModel();
+                            response.getResponseModel().getModel().getAnnotations());
+                    return response.getResponseModel();
                 });
     }
 
@@ -49,6 +49,6 @@ public class AnnotationService {
 
         return traceServer.getTspClient().getAnnotationApiAsync()
                 .getAnnotationsCategories(experimentUuid, outputId, markerSetId)
-                .thenApply(result -> result.getResponseModel());
+                .thenApply(response -> response.getResponseModel());
     }
 }

@@ -3,7 +3,6 @@ package org.eclipse.trace.coordinator.annotation;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
@@ -28,6 +27,8 @@ import jakarta.ws.rs.core.Response;
 
 @Path("experiments/{expUUID}/outputs/{outputId}/annotations")
 @ApplicationScoped
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AnnotationController {
 
     @Inject
@@ -37,8 +38,6 @@ public class AnnotationController {
     private AnnotationService annotationService;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getAnnotationCategories(@PathParam("expUUID") UUID experimentUuid,
             @PathParam("outputId") String outputId,
             @QueryParam("markerSetId") String markerSetId) {
@@ -48,11 +47,7 @@ public class AnnotationController {
                 .stream()
                 .map((TraceServer traceServer) -> this.annotationService.getAnnotationCategories(traceServer,
                         experimentUuid, outputId, markerSetId != null ? Optional.of(markerSetId) : Optional.empty()))
-                .collect(Collectors.toList())
-                .stream()
                 .map(CompletableFuture::join)
-                .collect(Collectors.toList())
-                .stream()
                 .reduce(null, (accumulator, genericResponse) -> {
                     if (accumulator == null) {
                         accumulator = genericResponse;
@@ -74,8 +69,6 @@ public class AnnotationController {
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getAnnotation(@PathParam("expUUID") UUID experimentUuid,
             @PathParam("outputId") String outputId, @NotNull Query query) {
         GenericResponse<AnnotationModel> genericResponseMerged = this.traceServerManager
@@ -83,11 +76,7 @@ public class AnnotationController {
                 .stream()
                 .map((TraceServer traceServer) -> this.annotationService.getAnnotationModel(traceServer,
                         experimentUuid, outputId, query))
-                .collect(Collectors.toList())
-                .stream()
                 .map(CompletableFuture::join)
-                .collect(Collectors.toList())
-                .stream()
                 .reduce(null, (accumulator, genericResponse) -> {
                     if (accumulator == null) {
                         accumulator = genericResponse;
