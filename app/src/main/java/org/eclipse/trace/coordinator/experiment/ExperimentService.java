@@ -7,7 +7,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.experiment.Experiment;
-import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.api.experiment.dto.CreateExperimentRequestDto;
+import org.eclipse.tsp.java.client.api.experiment.dto.UpdateExperimentRequestDto;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -31,8 +32,8 @@ public class ExperimentService {
         });
     }
 
-    public CompletableFuture<Experiment> createExperiment(TraceServer traceServer, Query query) {
-        return traceServer.getTspClient().getExperimentApiAsync().createExperiment(query).thenApply(response -> {
+    public CompletableFuture<Experiment> createExperiment(TraceServer traceServer, CreateExperimentRequestDto body) {
+        return traceServer.getTspClient().getExperimentApiAsync().createExperiment(body).thenApply(response -> {
             Experiment experiment = null;
             if (response.isOk() && response.getResponseModel() != null) {
                 experiment = response.getResponseModel();
@@ -41,8 +42,9 @@ public class ExperimentService {
         });
     }
 
-    public CompletableFuture<Experiment> updateExperiment(TraceServer traceServer, UUID experimentUuid, Query query) {
-        return traceServer.getTspClient().getExperimentApiAsync().updateExperiment(experimentUuid, query)
+    public CompletableFuture<Experiment> updateExperiment(TraceServer traceServer, UUID experimentUuid,
+            UpdateExperimentRequestDto body) {
+        return traceServer.getTspClient().getExperimentApiAsync().updateExperiment(experimentUuid, body)
                 .thenApply(response -> {
                     Experiment experiment = null;
                     if (response.isOk() && response.getResponseModel() != null) {

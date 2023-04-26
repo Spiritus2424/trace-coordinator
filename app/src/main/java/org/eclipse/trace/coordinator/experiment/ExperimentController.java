@@ -2,12 +2,8 @@ package org.eclipse.trace.coordinator.experiment;
 
 import static java.util.stream.Collectors.groupingBy;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -15,12 +11,14 @@ import java.util.stream.Collectors;
 import org.eclipse.trace.coordinator.trace.TraceService;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.experiment.Experiment;
+import org.eclipse.tsp.java.client.api.experiment.dto.CreateExperimentRequestDto;
 import org.eclipse.tsp.java.client.api.trace.Trace;
 import org.eclipse.tsp.java.client.shared.query.Query;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -108,26 +106,22 @@ public class ExperimentController {
     }
 
     @POST
-    public Response createExperiment(@NotNull Query query) {
-        final String experimentName = (String) query.getParameters().get("name");
-        final Set<UUID> traceUuids = ((ArrayList<String>) query.getParameters().get("traces")).stream()
-                .map((String traceUuid) -> UUID.fromString(traceUuid))
-                .collect(Collectors.toSet());
+    public Response createExperiment(@NotNull @Valid final CreateExperimentRequestDto body) {
         final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
                 .map(traceServer -> {
                     return this.traceService.getTraces(traceServer)
                             .thenApply((List<Trace> traces) -> {
                                 List<UUID> traceServerTracesUuid = traces.stream()
                                         .filter((Trace trace) -> {
-                                            return traceUuids.contains(trace.getUuid());
+                                            return body.getTraces().contains(trace.getUuid());
                                         })
                                         .map((Trace trace) -> trace.getUuid())
                                         .collect(Collectors.toList());
 
-                                Map<String, Object> parameters = new HashMap<>();
-                                parameters.put("name", experimentName);
-                                parameters.put("traces", traceServerTracesUuid);
-                                return this.experimentService.createExperiment(traceServer, new Query(parameters));
+                                CreateExperimentRequestDto newBody = new CreateExperimentRequestDto(
+                                        body.getExperimentName(),
+                                        traceServerTracesUuid);
+                                return this.experimentService.createExperiment(traceServer, newBody);
                             });
                 })
                 .map(CompletableFuture::join)
