@@ -13,8 +13,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class MarkerSetService {
 
-    public CompletableFuture<GenericResponse<Set<MarkerSet>>> getMarkerSets(TraceServer traceServer,
-            UUID experimentUuid) {
+    public CompletableFuture<GenericResponse<Set<MarkerSet>>> getMarkerSets(final TraceServer traceServer,
+            final UUID experimentUuid) {
         return traceServer.getTspClient().getMarkerSetApiAsync().getMarkerSets(experimentUuid)
                 .thenApply(response -> response.getResponseModel());
 

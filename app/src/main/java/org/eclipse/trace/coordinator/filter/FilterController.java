@@ -5,6 +5,8 @@ import org.eclipse.tsp.java.client.api.filter.Filter;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -38,14 +40,14 @@ public class FilterController {
     @Path("{filterId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getFilter(@PathParam("filterId") String filterId) {
+    public Response getFilter(@NotNull @PathParam("filterId") final String filterId) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createFilter(Filter Filter) {
+    public Response createFilter(@NotNull @Valid final Filter Filter) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
@@ -53,7 +55,9 @@ public class FilterController {
     @Path("{filterId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateFilter(@PathParam("filterId") String filterId, Filter filter) {
+    public Response updateFilter(
+            @NotNull @PathParam("filterId") final String filterId,
+            @NotNull @Valid final Filter filter) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
@@ -61,7 +65,7 @@ public class FilterController {
     @Path("{filterId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteFilter(@PathParam("filterId") String filterId) {
+    public Response deleteFilter(@NotNull @PathParam("filterId") final String filterId) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 

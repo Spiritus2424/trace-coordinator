@@ -12,6 +12,7 @@ import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -36,8 +37,8 @@ public class MarkerSetController {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getMarkerSets(@PathParam("expUUID") UUID experimentUuid) {
-        GenericResponse<Set<MarkerSet>> genericResponseMerged = this.traceServerManager.getTraceServers()
+    public Response getMarkerSets(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
+        final GenericResponse<Set<MarkerSet>> genericResponseMerged = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.markerSetService.getMarkerSets(traceServer, experimentUuid))
                 .map(CompletableFuture::join)

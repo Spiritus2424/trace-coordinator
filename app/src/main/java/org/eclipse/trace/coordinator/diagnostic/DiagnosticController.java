@@ -31,7 +31,7 @@ public class DiagnosticController {
     @GET
     @Path("health")
     public Response getHealthStatus() {
-        Health healthMerged = this.traceServerManager.getTraceServers()
+        final Health healthMerged = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
                 .map(CompletableFuture::join)

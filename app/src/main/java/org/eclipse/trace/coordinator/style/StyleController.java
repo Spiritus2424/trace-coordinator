@@ -12,6 +12,7 @@ import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -36,9 +37,11 @@ public class StyleController {
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyles(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
-            Query query) {
-        GenericResponse<OutputStyleModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+    public Response getStyles(
+            @NotNull @PathParam("expUUID") final UUID experimentUuid,
+            @NotNull @PathParam("outputId") final String outputId,
+            @NotNull final Query query) {
+        final GenericResponse<OutputStyleModel> genericResponseMerged = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.styleService.getStyles(traceServer, experimentUuid, outputId,
                         query))

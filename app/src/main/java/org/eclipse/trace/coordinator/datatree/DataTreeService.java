@@ -10,7 +10,8 @@ import jakarta.ws.rs.core.Response;
 
 @ApplicationScoped
 public class DataTreeService {
-    public Response getTree(TraceServer traceServer, UUID experimentUuid, String outputId, Query query) {
+    public Response getTree(final TraceServer traceServer, final UUID experimentUuid, final String outputId,
+            final Query query) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 }

@@ -42,7 +42,7 @@ dependencies {
     providedCompile("jakarta.platform:jakarta.jakartaee-api:10.0.0")
     
     // Tsp Java Client
-    implementation("org.eclipse:tsp-java-client-insiders:v2.4.0-alpha")
+    implementation("org.eclipse:tsp-java-client-insiders:v2.4.3-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
