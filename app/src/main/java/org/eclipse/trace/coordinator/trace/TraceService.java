@@ -16,26 +16,13 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class TraceService {
 
     public CompletableFuture<Trace> getTrace(TraceServer traceServer, UUID traceUuid) {
-        return traceServer.getTspClient().getTraceApiAsync().getTrace(traceUuid).thenApply(response -> {
-            Trace trace = null;
-            if (response.isOk() && response.getResponseModel() != null) {
-                trace = response.getResponseModel();
-            }
-
-            return trace;
-        });
+        return traceServer.getTspClient().getTraceApiAsync().getTrace(traceUuid)
+                .thenApply(response -> response.getResponseModel());
     }
 
     public CompletableFuture<List<Trace>> getTraces(TraceServer traceServer) {
-        return traceServer.getTspClient().getTraceApiAsync().getTraces(Optional.empty()).thenApply(response -> {
-            List<Trace> traces = new ArrayList<>();
-            if (response.isOk() && response.getResponseModel() != null) {
-                for (Trace trace : response.getResponseModel()) {
-                    traces.add(trace);
-                }
-            }
-            return traces;
-        });
+        return traceServer.getTspClient().getTraceApiAsync().getTraces(Optional.empty())
+                .thenApply(response -> response.getResponseModel());
     }
 
     public CompletableFuture<List<Trace>> openTrace(TraceServer traceServer, Query query) {

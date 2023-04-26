@@ -1,6 +1,5 @@
 package org.eclipse.trace.coordinator.experiment;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,13 +17,7 @@ public class ExperimentService {
     public CompletableFuture<List<Experiment>> getExperiments(TraceServer traceServer) {
         return traceServer.getTspClient().getExperimentApiAsync().getExperiments(Optional.empty())
                 .thenApply(response -> {
-                    List<Experiment> experiments = new ArrayList<>();
-                    if (response.isOk() && response.getResponseModel() != null) {
-                        for (Experiment experiment : response.getResponseModel()) {
-                            experiments.add(experiment);
-                        }
-                    }
-                    return experiments;
+                    return response.getResponseModel();
                 });
     }
 

@@ -1,6 +1,5 @@
 package org.eclipse.trace.coordinator.timegraph;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +29,8 @@ public class TimeGraphService {
 			Query query) {
 		return traceServer.getTspClient().getTimeGraphApiAsync()
 				.getTimeGraphArrows(experimentUuid, outputId, query).thenApply(response -> {
-					List<TimeGraphArrow> timeGraphArrows = Arrays.asList(response.getResponseModel().getModel());
-					this.timeGraphAnalysis.computeArrows(traceServer, timeGraphArrows);
-					return new GenericResponse<List<TimeGraphArrow>>(timeGraphArrows,
-							response.getResponseModel().getStatus(),
-							response.getResponseModel().getMessage());
+					this.timeGraphAnalysis.computeArrows(traceServer, response.getResponseModel().getModel());
+					return response.getResponseModel();
 				});
 	}
 

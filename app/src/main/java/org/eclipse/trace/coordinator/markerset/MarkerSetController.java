@@ -1,7 +1,5 @@
 package org.eclipse.trace.coordinator.markerset;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -39,8 +37,7 @@ public class MarkerSetController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getMarkerSets(@PathParam("expUUID") UUID experimentUuid) {
-        Set<MarkerSet> markerSets = new HashSet<>();
-        GenericResponse<MarkerSet[]> genericResponseMerged = this.traceServerManager.getTraceServers()
+        GenericResponse<Set<MarkerSet>> genericResponseMerged = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.markerSetService.getMarkerSets(traceServer, experimentUuid))
                 .map(CompletableFuture::join)
@@ -53,12 +50,11 @@ public class MarkerSetController {
                             accumulator.setMessage(genericResponse.getMessage());
                         }
                         if (genericResponse.getModel() != null) {
-                            markerSets.addAll(Arrays.asList(genericResponse.getModel()));
+                            accumulator.getModel().addAll(genericResponse.getModel());
                         }
                     }
                     return accumulator;
                 });
-        genericResponseMerged.setModel(markerSets.toArray(new MarkerSet[markerSets.size()]));
 
         return Response.ok(genericResponseMerged).build();
     }
