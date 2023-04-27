@@ -10,23 +10,24 @@ import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class BookmarkService {
-    public List<Bookmark> getBookmarks(TraceServer traceServer, UUID experimentUuid) {
+    public List<Bookmark> getBookmarks(final TraceServer traceServer, final UUID experimentUuid) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Bookmark getBookmark(TraceServer traceServer, UUID experimentUuid, UUID bookmarkUuid) {
+    public Bookmark getBookmark(final TraceServer traceServer, final UUID experimentUuid, final UUID bookmarkUuid) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Bookmark createBookmark(TraceServer traceServer, UUID experimentUuid, Bookmark bookmark) {
+    public Bookmark createBookmark(final TraceServer traceServer, final UUID experimentUuid, final Bookmark bookmark) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Bookmark updateBookmark(TraceServer traceServer, UUID experimentUuid, UUID bookmarkUuid, Bookmark bookmark) {
+    public Bookmark updateBookmark(final TraceServer traceServer, final UUID experimentUuid, final UUID bookmarkUuid,
+            Bookmark bookmark) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Bookmark deleteBookmark(TraceServer traceServer, UUID experimentUuid, UUID bookmarkUuid) {
+    public Bookmark deleteBookmark(final TraceServer traceServer, final UUID experimentUuid, final UUID bookmarkUuid) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 }

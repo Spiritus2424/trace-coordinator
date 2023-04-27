@@ -10,23 +10,23 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class FilterService {
 
-    public List<Filter> getFilters(TraceServer traceServer) {
+    public List<Filter> getFilters(final TraceServer traceServer) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Filter getFilter(TraceServer traceServer, String filterId) {
+    public Filter getFilter(final TraceServer traceServer, final String filterId) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Filter createFilter(TraceServer traceServer, Filter filter) {
+    public Filter createFilter(final TraceServer traceServer, final Filter filter) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Filter updateFilter(TraceServer traceServer, String filterId, Filter filter) {
+    public Filter updateFilter(final TraceServer traceServer, final String filterId, final Filter filter) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public Filter deleteFilter(TraceServer traceServer, String filterId) {
+    public Filter deleteFilter(final TraceServer traceServer, final String filterId) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 }

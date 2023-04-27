@@ -7,6 +7,8 @@ import org.eclipse.tsp.java.client.api.bookmark.Bookmark;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -31,7 +33,7 @@ public class BookmarkController {
     @GET
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookmarks(@PathParam("expUUID") UUID experimentUuid) {
+    public Response getBookmarks(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
@@ -39,14 +41,18 @@ public class BookmarkController {
     @Path("{bookmarkId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookmark(@PathParam("expUUID") UUID experimentUuid, @PathParam("bookmarkId") UUID bookmarkUuid) {
+    public Response getBookmark(
+            @NotNull @PathParam("expUUID") final UUID experimentUuid,
+            @NotNull @PathParam("bookmarkId") final UUID bookmarkUuid) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createBookmark(@PathParam("expUUID") UUID experimentUuid, Bookmark bookmark) {
+    public Response createBookmark(
+            @NotNull @PathParam("expUUID") final UUID experimentUuid,
+            @NotNull @Valid final Bookmark bookmark) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
@@ -54,8 +60,10 @@ public class BookmarkController {
     @Path("{bookmarkId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response updateBookmark(@PathParam("expUUID") UUID experimentUuid,
-            @PathParam("bookmarkId") UUID bookmarkUuid, Bookmark bookmark) {
+    public Response updateBookmark(
+            @NotNull @PathParam("expUUID") final UUID experimentUuid,
+            @NotNull @PathParam("bookmarkId") final UUID bookmarkUuid,
+            @NotNull @Valid final Bookmark bookmark) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
@@ -63,8 +71,9 @@ public class BookmarkController {
     @Path("{bookmarkId}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteBookmark(@PathParam("expUUID") UUID experimentUuid,
-            @PathParam("bookmarkId") UUID bookmarkUuid) {
+    public Response deleteBookmark(
+            @NotNull @PathParam("expUUID") final UUID experimentUuid,
+            @NotNull @PathParam("bookmarkId") final UUID bookmarkUuid) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 }

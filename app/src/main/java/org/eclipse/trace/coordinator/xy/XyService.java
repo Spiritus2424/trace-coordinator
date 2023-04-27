@@ -5,12 +5,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.xy.XyModel;
+import org.eclipse.tsp.java.client.api.xy.dto.GetXyModelRequestDto;
+import org.eclipse.tsp.java.client.api.xy.dto.GetXyTreeRequestDto;
 import org.eclipse.tsp.java.client.shared.entry.Entry;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
-import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,40 +22,57 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class XyService {
 
-    @Inject
-    private XyAnalysis xyAnalysis;
+	@Inject
+	private XyAnalysis xyAnalysis;
 
-    public CompletableFuture<GenericResponse<XyModel>> getXy(TraceServer traceServer, UUID experimentUuid,
-            String outputId, Query query) {
-        if (query.getParameters().containsKey("requested_items")) {
-            List<Integer> requested_items = (List<Integer>) query.getParameters().get("requested_items");
+	public CompletableFuture<GenericResponse<XyModel>> getXy(
+			final TraceServer traceServer,
+			final UUID experimentUuid,
+			final String outputId,
+			final Body<GetXyModelRequestDto> body) {
 
-            for (int i = 0; i < requested_items.size(); i++) {
-                requested_items.set(i, traceServer.decodeEntryId(requested_items.get(i)));
-            }
+		final List<Integer> traceServerRequestedItems = List.copyOf(body.getParameters().getRequestedItems()).stream()
+				.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
+				.map(encodeEntryId -> traceServer.decodeEntryId(encodeEntryId))
+				.collect(Collectors.toList());
 
-            query.getParameters().put("requested_items", requested_items);
-        }
+		final Body<GetXyModelRequestDto> newBody = new Body<GetXyModelRequestDto>(
+				new GetXyModelRequestDto(
+						body.getParameters().getRequestedTimerange(),
+						traceServerRequestedItems));
 
-        return traceServer.getTspClient().getXyApiAsync().getXy(experimentUuid, outputId, query).thenApply(response -> {
-            this.xyAnalysis.computeXy(traceServer, response.getResponseModel().getModel().getSeries());
-            return response.getResponseModel();
-        });
-    }
+		return (!traceServerRequestedItems.isEmpty())
+				? traceServer.getTspClient().getXyApiAsync().getXy(experimentUuid, outputId, newBody)
+						.thenApply(response -> {
+							this.xyAnalysis.computeXy(traceServer, response
+									.getResponseModel().getModel().getSeries());
+							return response.getResponseModel();
+						})
+				: null;
+	}
 
-    public CompletableFuture<GenericResponse<EntryModel<Entry>>> getTree(TraceServer traceServer, UUID experimentUuid,
-            String outputId,
-            Query query) {
-        return traceServer.getTspClient().getXyApiAsync().getXyTree(experimentUuid, outputId, query)
-                .thenApply(response -> {
-                    this.xyAnalysis.computeTree(traceServer, response.getResponseModel().getModel().getEntries());
-                    return response.getResponseModel();
-                });
-    }
+	public CompletableFuture<GenericResponse<EntryModel<Entry>>> getTree(
+			final TraceServer traceServer,
+			final UUID experimentUuid,
+			final String outputId,
+			final Body<GetXyTreeRequestDto> body) {
+		return traceServer.getTspClient().getXyApiAsync().getXyTree(experimentUuid, outputId, body)
+				.thenApply(response -> {
+					this.xyAnalysis.computeTree(traceServer,
+							response.getResponseModel().getModel().getEntries());
+					return response.getResponseModel();
+				});
+	}
 
-    public GenericResponse<Map<String, String>> getTooltip(TraceServer traceServer, UUID experimentUuid,
-            String outputId, int xValue, Optional<Integer> yValue, Optional<String> seriesId) {
-        return traceServer.getTspClient().getXyApi().getXyTooltip(experimentUuid, outputId, xValue, yValue, seriesId)
-                .getResponseModel();
-    }
+	public CompletableFuture<GenericResponse<Map<String, String>>> getTooltips(
+			final TraceServer traceServer,
+			final UUID experimentUuid,
+			final String outputId,
+			final int xValue,
+			final Optional<Integer> yValue,
+			final Optional<String> seriesId) {
+		return traceServer.getTspClient().getXyApiAsync()
+				.getXyTooltips(experimentUuid, outputId, xValue, yValue, seriesId)
+				.thenApply(response -> response.getResponseModel());
+	}
 }

@@ -36,9 +36,8 @@ public class OutputDescriptorController {
     @Path("")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getOutputDescriptors(@NotNull @PathParam("expUUID") UUID experimentUuid) {
-
-        Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
+    public Response getOutputDescriptors(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
+        final Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
                 .stream()
                 .map((TraceServer traceServer) -> this.outputDescriptorService.getOutputDescriptors(traceServer,
                         experimentUuid))
@@ -53,8 +52,9 @@ public class OutputDescriptorController {
     @Path("{outputId}")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response getOutputDescriptor(@NotNull @PathParam("expUUID") UUID experimentUuid,
-            @NotNull @PathParam("outputId") String outputId) {
+    public Response getOutputDescriptor(
+            @NotNull @PathParam("expUUID") final UUID experimentUuid,
+            @NotNull @PathParam("outputId") final String outputId) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 }

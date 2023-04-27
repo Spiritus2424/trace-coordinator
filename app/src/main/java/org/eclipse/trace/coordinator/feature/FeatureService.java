@@ -9,11 +9,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class FeatureService {
 
-    public List<Object> getSupportedTraceTypes(TraceServer traceServer) {
+    public List<Object> getSupportedTraceTypes(final TraceServer traceServer) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public List<Object> getSupportedOutputTypes(TraceServer traceServer) {
+    public List<Object> getSupportedOutputTypes(final TraceServer traceServer) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 }

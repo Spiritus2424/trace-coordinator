@@ -1,8 +1,6 @@
 package org.eclipse.trace.coordinator.trace;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -11,11 +9,13 @@ import java.util.stream.Collectors;
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.trace.Trace;
-import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.api.trace.dto.OpenTraceRequestDto;
+import org.eclipse.tsp.java.client.shared.query.Body;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -34,104 +34,101 @@ import jakarta.ws.rs.core.Response.Status;
 @Consumes(MediaType.APPLICATION_JSON)
 public class TraceController {
 
-    @Inject
-    private TraceService traceService;
+	@Inject
+	private TraceService traceService;
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @PostConstruct
-    public void openTraces() {
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            for (String tracePath : traceServer.getTracesPath()) {
-                Map<String, Object> parameters = new HashMap<>();
-                parameters.put("uri", tracePath);
-                String[] uri = tracePath.split("/");
-                parameters.put("name",
-                        String.format("%s$%s", traceServer.getHost(), uri[uri.length - 1]));
-                this.traceService.openTrace(traceServer, new Query(parameters));
-            }
-        }
-    }
+	@PostConstruct
+	public void openTraces() {
+		for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
+			for (String tracePath : traceServer.getTracesPath()) {
+				String[] uri = tracePath.split("/");
+				OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(tracePath);
+				openTraceRequestDto.setName(String.format("%s$%s", traceServer.getHost(), uri[uri.length - 1]));
+				this.traceService.openTrace(traceServer, new Body<OpenTraceRequestDto>(openTraceRequestDto));
+			}
+		}
+	}
 
-    @GET
-    public Response getTraces() {
-        List<Trace> traces = this.traceServerManager.getTraceServers().stream()
-                .map((TraceServer traceServer) -> this.traceService.getTraces(traceServer))
-                .map(CompletableFuture::join)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+	@GET
+	public Response getTraces() {
+		final List<Trace> traces = this.traceServerManager.getTraceServers().stream()
+				.map((TraceServer traceServer) -> this.traceService.getTraces(traceServer))
+				.map(CompletableFuture::join)
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
 
-        return Response.ok(traces).build();
-    }
+		return Response.ok(traces).build();
+	}
 
-    @GET
-    @Path("{uuid}")
-    public Response getTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
-        Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
-                .map((TraceServer traceServer) -> this.traceService.getTrace(traceServer, traceUuid))
-                .map(CompletableFuture::join)
-                .findFirst();
-        Response response = null;
+	@GET
+	@Path("{uuid}")
+	public Response getTrace(@NotNull @PathParam("uuid") final UUID traceUuid) {
+		final Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
+				.map((TraceServer traceServer) -> this.traceService.getTrace(traceServer, traceUuid))
+				.map(CompletableFuture::join)
+				.findFirst();
+		Response response = null;
 
-        if (trace.isPresent()) {
-            response = Response.ok(trace.get()).build();
-        } else {
-            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-        }
+		if (trace.isPresent()) {
+			response = Response.ok(trace.get()).build();
+		} else {
+			response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+		}
 
-        return response;
-    }
+		return response;
+	}
 
-    @POST
-    public Response openTrace(@NotNull Query query) {
-        final String uri = (String) query.getParameters().get("uri");
-        List<Trace> traces = this.traceServerManager.getTraceServers().stream()
-                .map((TraceServer traceServer) -> {
-                    /**
-                     * Fix Trace Server: The trace server should put a name by default if it is not
-                     * provide
-                     */
-                    String traceName = (String) query.getParameters().get("name");
-                    if (traceName == null) {
-                        String[] uriSplit = uri.split("/");
-                        traceName = uriSplit[uriSplit.length - 1];
-                    }
-                    Map<String, Object> parameters = new HashMap<>();
-                    parameters.put("uri", uri);
-                    parameters.put("name", String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")));
-                    return this.traceService.openTrace(traceServer, new Query(parameters));
-                })
-                .map(CompletableFuture::join)
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
+	@POST
+	public Response openTrace(@NotNull @Valid final Body<OpenTraceRequestDto> body) {
+		final List<Trace> traces = this.traceServerManager.getTraceServers().stream()
+				.map((TraceServer traceServer) -> {
+					/**
+					 * Fix Trace Server: The trace server should put a name by default if it is not
+					 * provide
+					 */
+					String traceName = body.getParameters().getName();
+					if (traceName == null) {
+						final String[] uriSplit = body.getParameters().getUri().split("/");
+						traceName = uriSplit[uriSplit.length - 1];
+					}
 
-        Response response = null;
-        if (traces.size() != 0) {
-            response = Response.ok(traces).build();
-        } else {
-            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-        }
+					OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(body.getParameters().getUri(),
+							String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")), null);
+					return this.traceService.openTrace(traceServer, new Body<OpenTraceRequestDto>(openTraceRequestDto));
+				})
+				.map(CompletableFuture::join)
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
 
-        return response;
-    }
+		Response response = null;
+		if (traces.size() != 0) {
+			response = Response.ok(traces).build();
+		} else {
+			response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+		}
 
-    @DELETE
-    @Path("{uuid}")
-    public Response deleteTrace(@PathParam("uuid") @NotNull UUID traceUuid) {
-        Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
-                .map((TraceServer traceServer) -> this.traceService.deleteTrace(traceServer, traceUuid))
-                .map(CompletableFuture::join)
-                .findFirst();
+		return response;
+	}
 
-        Response response = null;
-        if (trace.isPresent()) {
-            response = Response.ok(trace.get()).build();
-        } else {
-            response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
-        }
+	@DELETE
+	@Path("{uuid}")
+	public Response deleteTrace(@NotNull @PathParam("uuid") final UUID traceUuid) {
+		final Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
+				.map((TraceServer traceServer) -> this.traceService.deleteTrace(traceServer, traceUuid))
+				.map(CompletableFuture::join)
+				.findFirst();
 
-        return response;
-    }
+		Response response = null;
+		if (trace.isPresent()) {
+			response = Response.ok(trace.get()).build();
+		} else {
+			response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+		}
+
+		return response;
+	}
 
 }

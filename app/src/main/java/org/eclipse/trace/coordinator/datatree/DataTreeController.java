@@ -7,6 +7,7 @@ import org.eclipse.tsp.java.client.shared.query.Query;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -30,8 +31,10 @@ public class DataTreeController {
     @Path("tree")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getTree(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
-            Query query) {
+    public Response getTree(
+            @PathParam("expUUID") final UUID experimentUuid,
+            @PathParam("outputId") final String outputId,
+            @Valid final Query query) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
