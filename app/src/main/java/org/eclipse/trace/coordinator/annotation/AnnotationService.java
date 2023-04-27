@@ -3,6 +3,7 @@ package org.eclipse.trace.coordinator.annotation;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationCategoriesModel;
@@ -19,33 +20,35 @@ public class AnnotationService {
     @Inject
     private AnnotationAnalysis annotationAnalysis;
 
-    public GenericResponse<AnnotationCategoriesModel> getAnnotationCategories(TraceServer traceServer,
-            UUID experimentUuid, String outputId,
-            Optional<String> markerSetId) {
-        return traceServer.getTspClient().getAnnotationApi()
-                .getAnnotationsCategories(experimentUuid, outputId, markerSetId)
-                .getResponseModel();
-    }
-
-    public GenericResponse<AnnotationModel> getAnnotationModel(TraceServer traceServer, UUID experimentUuid,
-            String outputId, Query query) {
+    public CompletableFuture<GenericResponse<AnnotationModel>> getAnnotationModel(TraceServer traceServer,
+            UUID experimentUuid, String outputId, Query query) {
 
         if (query.getParameters().containsKey("requested_items")) {
             List<Integer> requested_items = (List<Integer>) query.getParameters().get("requested_items");
 
-            for (int i = 0; i < requested_items.size(); i++) {
-                requested_items.set(i, traceServer.decodeEntryId(requested_items.get(i)));
-            }
+            requested_items.parallelStream().map((Integer encodeEntryId) -> {
+                return traceServer.decodeEntryId(encodeEntryId);
+            });
 
             query.getParameters().put("requested_items", requested_items);
         }
 
-        GenericResponse<AnnotationModel> genericResponse = traceServer.getTspClient().getAnnotationApi()
-                .getAnnotations(experimentUuid, outputId, query)
-                .getResponseModel();
+        return traceServer.getTspClient()
+                .getAnnotationApiAsync()
+                .getAnnotations(experimentUuid, outputId, query).thenApply((response) -> {
+                    this.annotationAnalysis.computeAnnotationModel(traceServer,
+                            response.getResponseModel().getModel().getAnnotations());
+                    return response.getResponseModel();
+                });
+    }
 
-        this.annotationAnalysis.computeAnnotationModel(traceServer,
-                genericResponse.getModel().getAnnotations());
-        return genericResponse;
+    public CompletableFuture<GenericResponse<AnnotationCategoriesModel>> getAnnotationCategories(
+            TraceServer traceServer,
+            UUID experimentUuid, String outputId,
+            Optional<String> markerSetId) {
+
+        return traceServer.getTspClient().getAnnotationApiAsync()
+                .getAnnotationsCategories(experimentUuid, outputId, markerSetId)
+                .thenApply(response -> response.getResponseModel());
     }
 }

@@ -1,12 +1,10 @@
 package org.eclipse.trace.coordinator.style;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.api.style.OutputElementStyle;
 import org.eclipse.tsp.java.client.api.style.OutputStyleModel;
 import org.eclipse.tsp.java.client.shared.query.Query;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
@@ -40,24 +38,27 @@ public class StyleController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getStyles(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
             Query query) {
-        Map<String, OutputElementStyle> styles = new HashMap<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            GenericResponse<OutputStyleModel> genericResponse = this.styleService.getStyles(traceServer, experimentUuid,
-                    outputId, query);
+        GenericResponse<OutputStyleModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.styleService.getStyles(traceServer, experimentUuid, outputId,
+                        query))
+                .map(CompletableFuture::join)
+                .reduce(null, (accumulator, genericResponse) -> {
+                    if (accumulator == null) {
+                        accumulator = genericResponse;
+                    } else {
+                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+                            accumulator.setStatus(genericResponse.getStatus());
+                            accumulator.setMessage(genericResponse.getMessage());
+                        }
+                        if (genericResponse.getModel() != null) {
+                            accumulator.getModel().getStyles().putAll(genericResponse.getModel().getStyles());
+                        }
+                    }
 
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
+                    return accumulator;
+                });
 
-            if (genericResponse.getModel() != null) {
-                styles.putAll(genericResponse.getModel().getStyles());
-            }
-        }
-        return Response
-                .ok(new GenericResponse<OutputStyleModel>(new OutputStyleModel(styles), responseStatus, statusMessage))
-                .build();
+        return Response.ok(genericResponseMerged).build();
     }
 }

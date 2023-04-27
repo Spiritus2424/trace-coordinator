@@ -1,22 +1,17 @@
 package org.eclipse.trace.coordinator.diagnostic;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.health.Health;
-import org.eclipse.tsp.java.client.api.health.HealthStatus;
-import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped
 public class DiagnosticService {
 
-    public Health getStatus(TraceServer traceServer) {
-        TspClientResponse<Health> response = traceServer.getTspClient().getHealthApi().checkHealth();
-        Health health = new Health(HealthStatus.UP);
-        if (response.getResponseModel().getStatus() == HealthStatus.DOWN) {
-            health.setStatus(HealthStatus.DOWN);
-        }
-
-        return health;
+    public CompletableFuture<Health> getStatus(TraceServer traceServer) {
+        return traceServer.getTspClient().getHealthApiAsync().checkHealth()
+                .thenApply(response -> response.getResponseModel());
     }
 }

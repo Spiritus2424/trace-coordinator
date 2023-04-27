@@ -1,17 +1,11 @@
 package org.eclipse.trace.coordinator.annotation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.api.annotation.Annotation;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationCategoriesModel;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationModel;
 import org.eclipse.tsp.java.client.shared.query.Query;
@@ -33,6 +27,8 @@ import jakarta.ws.rs.core.Response;
 
 @Path("experiments/{expUUID}/outputs/{outputId}/annotations")
 @ApplicationScoped
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AnnotationController {
 
     @Inject
@@ -42,56 +38,61 @@ public class AnnotationController {
     private AnnotationService annotationService;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getAnnotationCategories(@PathParam("expUUID") UUID experimentUuid,
             @PathParam("outputId") String outputId,
             @QueryParam("markerSetId") String markerSetId) {
-        Set<String> annotationCategories = new HashSet<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            GenericResponse<AnnotationCategoriesModel> genericResponse = this.annotationService
-                    .getAnnotationCategories(traceServer, experimentUuid, outputId,
-                            markerSetId != null ? Optional.of(markerSetId) : Optional.empty());
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
-            if (genericResponse.getModel() != null) {
-                annotationCategories.addAll(genericResponse.getModel().getAnnotationCategories());
-            }
-        }
 
-        return Response.ok(new GenericResponse<AnnotationCategoriesModel>(
-                new AnnotationCategoriesModel(new ArrayList<>(annotationCategories)), responseStatus, statusMessage))
-                .build();
+        GenericResponse<AnnotationCategoriesModel> genericResponseMerged = this.traceServerManager
+                .getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.annotationService.getAnnotationCategories(traceServer,
+                        experimentUuid, outputId, markerSetId != null ? Optional.of(markerSetId) : Optional.empty()))
+                .map(CompletableFuture::join)
+                .reduce(null, (accumulator, genericResponse) -> {
+                    if (accumulator == null) {
+                        accumulator = genericResponse;
+                    } else {
+                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+                            accumulator.setStatus(genericResponse.getStatus());
+                            accumulator.setMessage(genericResponse.getMessage());
+                        }
+                        if (genericResponse.getModel() != null) {
+                            accumulator.getModel().getAnnotationCategories()
+                                    .addAll(genericResponse.getModel().getAnnotationCategories());
+                        }
+                    }
+
+                    return accumulator;
+                });
+
+        return Response.ok(genericResponseMerged).build();
     }
 
     @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
     public Response getAnnotation(@PathParam("expUUID") UUID experimentUuid,
             @PathParam("outputId") String outputId, @NotNull Query query) {
+        GenericResponse<AnnotationModel> genericResponseMerged = this.traceServerManager
+                .getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.annotationService.getAnnotationModel(traceServer,
+                        experimentUuid, outputId, query))
+                .map(CompletableFuture::join)
+                .reduce(null, (accumulator, genericResponse) -> {
+                    if (accumulator == null) {
+                        accumulator = genericResponse;
+                    } else {
+                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+                            accumulator.setStatus(genericResponse.getStatus());
+                            accumulator.setMessage(genericResponse.getMessage());
+                        }
+                        if (genericResponse.getModel() != null) {
+                            accumulator.getModel().getAnnotations().putAll(genericResponse.getModel().getAnnotations());
+                        }
+                    }
 
-        Map<String, List<Annotation>> annotationsModels = new HashMap<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            GenericResponse<AnnotationModel> genericResponse = this.annotationService.getAnnotationModel(traceServer,
-                    experimentUuid, outputId, query);
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
-            if (genericResponse.getModel() != null) {
+                    return accumulator;
+                });
 
-                annotationsModels.putAll(genericResponse.getModel().getAnnotations());
-            }
-        }
-
-        return Response.ok(new GenericResponse<AnnotationModel>(
-                new AnnotationModel(annotationsModels), responseStatus, statusMessage))
-                .build();
+        return Response.ok(genericResponseMerged).build();
     }
 }

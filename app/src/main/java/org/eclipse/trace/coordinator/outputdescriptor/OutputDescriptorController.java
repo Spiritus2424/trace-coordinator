@@ -1,8 +1,10 @@
 package org.eclipse.trace.coordinator.outputdescriptor;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
@@ -35,12 +37,14 @@ public class OutputDescriptorController {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getOutputDescriptors(@NotNull @PathParam("expUUID") UUID experimentUuid) {
-        Set<OutputDescriptor> outputDescriptors = new HashSet<>();
 
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            outputDescriptors
-                    .addAll(outputDescriptorService.getOutputDescriptors(traceServer, experimentUuid));
-        }
+        Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.outputDescriptorService.getOutputDescriptors(traceServer,
+                        experimentUuid))
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(Collectors.toSet());
 
         return Response.ok(outputDescriptors.toArray()).build();
     }

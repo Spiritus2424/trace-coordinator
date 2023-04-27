@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
@@ -39,27 +40,27 @@ public class MarkerSetController {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response getMarkerSets(@PathParam("expUUID") UUID experimentUuid) {
         Set<MarkerSet> markerSets = new HashSet<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+        GenericResponse<MarkerSet[]> genericResponseMerged = this.traceServerManager.getTraceServers()
+                .stream()
+                .map((TraceServer traceServer) -> this.markerSetService.getMarkerSets(traceServer, experimentUuid))
+                .map(CompletableFuture::join)
+                .reduce(null, (accumulator, genericResponse) -> {
+                    if (accumulator == null) {
+                        accumulator = genericResponse;
+                    } else {
+                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+                            accumulator.setStatus(genericResponse.getStatus());
+                            accumulator.setMessage(genericResponse.getMessage());
+                        }
+                        if (genericResponse.getModel() != null) {
+                            markerSets.addAll(Arrays.asList(genericResponse.getModel()));
+                        }
+                    }
+                    return accumulator;
+                });
+        genericResponseMerged.setModel(markerSets.toArray(new MarkerSet[markerSets.size()]));
 
-            GenericResponse<MarkerSet[]> genericResponse = this.markerSetService
-                    .getMarkerSets(traceServer, experimentUuid);
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
-
-            if (genericResponse.getModel() != null) {
-                markerSets.addAll(Arrays.asList(genericResponse.getModel()));
-
-            }
-        }
-
-        return Response
-                .ok(new GenericResponse<MarkerSet[]>(markerSets.toArray(new MarkerSet[markerSets.size()]),
-                        responseStatus, statusMessage))
-                .build();
+        return Response.ok(genericResponseMerged).build();
     }
 
 }

@@ -1,6 +1,7 @@
 package org.eclipse.trace.coordinator.style;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.style.OutputStyleModel;
@@ -12,8 +13,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class StyleService {
 
-    public GenericResponse<OutputStyleModel> getStyles(TraceServer traceServer, UUID experimentUuid, String outputId,
+    public CompletableFuture<GenericResponse<OutputStyleModel>> getStyles(TraceServer traceServer, UUID experimentUuid,
+            String outputId,
             Query query) {
-        return traceServer.getTspClient().getStyleApi().getStyles(experimentUuid, outputId, query).getResponseModel();
+        return traceServer.getTspClient().getStyleApiAsync().getStyles(experimentUuid, outputId, query)
+                .thenApply(response -> response.getResponseModel());
     }
 }
