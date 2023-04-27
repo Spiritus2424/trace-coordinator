@@ -22,24 +22,24 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class DiagnosticController {
 
-    @Inject
-    DiagnosticService diagnosticService;
+	@Inject
+	DiagnosticService diagnosticService;
 
-    @Inject
-    TraceServerManager traceServerManager;
+	@Inject
+	TraceServerManager traceServerManager;
 
-    @GET
-    @Path("health")
-    public Response getHealthStatus() {
-        final Health healthMerged = this.traceServerManager.getTraceServers()
-                .stream()
-                .map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
-                .map(CompletableFuture::join)
-                .filter(health -> health.getStatus() == HealthStatus.DOWN)
-                .findFirst()
-                .isPresent() ? new Health(HealthStatus.DOWN) : new Health(HealthStatus.UP);
+	@GET
+	@Path("health")
+	public Response getHealthStatus() {
+		final Health healthMerged = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
+				.map(CompletableFuture::join)
+				.filter(health -> health.getStatus() == HealthStatus.DOWN)
+				.findFirst()
+				.isPresent() ? new Health(HealthStatus.DOWN) : new Health(HealthStatus.UP);
 
-        return Response.ok(healthMerged).build();
-    }
+		return Response.ok(healthMerged).build();
+	}
 
 }

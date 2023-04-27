@@ -13,11 +13,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class OutputDescriptorService {
 
-    public CompletableFuture<List<OutputDescriptor>> getOutputDescriptors(final TraceServer traceServer,
-            final UUID experimentUuid) {
-        return traceServer.getTspClient().getOutputDescriptorApiAsync()
-                .experimentOutputs(experimentUuid, Optional.empty()).thenApply(response -> response.getResponseModel());
+	public CompletableFuture<List<OutputDescriptor>> getOutputDescriptors(final TraceServer traceServer,
+			final UUID experimentUuid) {
+		return traceServer.getTspClient().getOutputDescriptorApiAsync()
+				.experimentOutputs(experimentUuid, Optional.empty()).thenApply(response -> response.getResponseModel());
 
-    }
+	}
 
 }

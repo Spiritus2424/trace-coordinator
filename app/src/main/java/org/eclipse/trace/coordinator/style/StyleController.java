@@ -28,40 +28,40 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class StyleController {
 
-    @Inject
-    StyleService styleService;
+	@Inject
+	StyleService styleService;
 
-    @Inject
-    TraceServerManager traceServerManager;
+	@Inject
+	TraceServerManager traceServerManager;
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getStyles(
-            @NotNull @PathParam("expUUID") final UUID experimentUuid,
-            @NotNull @PathParam("outputId") final String outputId,
-            @NotNull final Query query) {
-        final GenericResponse<OutputStyleModel> genericResponseMerged = this.traceServerManager.getTraceServers()
-                .stream()
-                .map((TraceServer traceServer) -> this.styleService.getStyles(traceServer, experimentUuid, outputId,
-                        query))
-                .map(CompletableFuture::join)
-                .reduce(null, (accumulator, genericResponse) -> {
-                    if (accumulator == null) {
-                        accumulator = genericResponse;
-                    } else {
-                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-                            accumulator.setStatus(genericResponse.getStatus());
-                            accumulator.setMessage(genericResponse.getMessage());
-                        }
-                        if (genericResponse.getModel() != null) {
-                            accumulator.getModel().getStyles().putAll(genericResponse.getModel().getStyles());
-                        }
-                    }
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getStyles(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@NotNull final Query query) {
+		final GenericResponse<OutputStyleModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.styleService.getStyles(traceServer, experimentUuid, outputId,
+						query))
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
+						if (genericResponse.getModel() != null) {
+							accumulator.getModel().getStyles().putAll(genericResponse.getModel().getStyles());
+						}
+					}
 
-                    return accumulator;
-                });
+					return accumulator;
+				});
 
-        return Response.ok(genericResponseMerged).build();
-    }
+		return Response.ok(genericResponseMerged).build();
+	}
 }

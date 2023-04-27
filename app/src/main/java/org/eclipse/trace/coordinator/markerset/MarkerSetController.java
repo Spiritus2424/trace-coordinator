@@ -28,36 +28,36 @@ import jakarta.ws.rs.core.Response;
 @ApplicationScoped
 public class MarkerSetController {
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @Inject
-    private MarkerSetService markerSetService;
+	@Inject
+	private MarkerSetService markerSetService;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getMarkerSets(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
-        final GenericResponse<Set<MarkerSet>> genericResponseMerged = this.traceServerManager.getTraceServers()
-                .stream()
-                .map((TraceServer traceServer) -> this.markerSetService.getMarkerSets(traceServer, experimentUuid))
-                .map(CompletableFuture::join)
-                .reduce(null, (accumulator, genericResponse) -> {
-                    if (accumulator == null) {
-                        accumulator = genericResponse;
-                    } else {
-                        if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-                            accumulator.setStatus(genericResponse.getStatus());
-                            accumulator.setMessage(genericResponse.getMessage());
-                        }
-                        if (genericResponse.getModel() != null) {
-                            accumulator.getModel().addAll(genericResponse.getModel());
-                        }
-                    }
-                    return accumulator;
-                });
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getMarkerSets(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
+		final GenericResponse<Set<MarkerSet>> genericResponseMerged = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.markerSetService.getMarkerSets(traceServer, experimentUuid))
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
+						if (genericResponse.getModel() != null) {
+							accumulator.getModel().addAll(genericResponse.getModel());
+						}
+					}
+					return accumulator;
+				});
 
-        return Response.ok(genericResponseMerged).build();
-    }
+		return Response.ok(genericResponseMerged).build();
+	}
 
 }

@@ -26,35 +26,35 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class OutputDescriptorController {
 
-    @Inject
-    OutputDescriptorService outputDescriptorService;
+	@Inject
+	OutputDescriptorService outputDescriptorService;
 
-    @Inject
-    TraceServerManager traceServerManager;
+	@Inject
+	TraceServerManager traceServerManager;
 
-    @GET
-    @Path("")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getOutputDescriptors(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
-        final Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
-                .stream()
-                .map((TraceServer traceServer) -> this.outputDescriptorService.getOutputDescriptors(traceServer,
-                        experimentUuid))
-                .map(CompletableFuture::join)
-                .flatMap(List::stream)
-                .collect(Collectors.toSet());
+	@GET
+	@Path("")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getOutputDescriptors(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
+		final Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.outputDescriptorService.getOutputDescriptors(traceServer,
+						experimentUuid))
+				.map(CompletableFuture::join)
+				.flatMap(List::stream)
+				.collect(Collectors.toSet());
 
-        return Response.ok(outputDescriptors.toArray()).build();
-    }
+		return Response.ok(outputDescriptors.toArray()).build();
+	}
 
-    @GET
-    @Path("{outputId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getOutputDescriptor(
-            @NotNull @PathParam("expUUID") final UUID experimentUuid,
-            @NotNull @PathParam("outputId") final String outputId) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("{outputId}")
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response getOutputDescriptor(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 }

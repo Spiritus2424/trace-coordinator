@@ -10,8 +10,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class DiagnosticService {
 
-    public CompletableFuture<Health> getStatus(final TraceServer traceServer) {
-        return traceServer.getTspClient().getHealthApiAsync().checkHealth()
-                .thenApply(response -> response.getResponseModel());
-    }
+	public CompletableFuture<Health> getStatus(final TraceServer traceServer) {
+		return traceServer.getTspClient().getHealthApiAsync().checkHealth()
+				.thenApply(response -> response.getResponseModel());
+	}
 }
