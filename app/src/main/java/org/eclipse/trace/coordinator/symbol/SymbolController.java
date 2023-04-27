@@ -4,6 +4,7 @@ import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -28,7 +29,9 @@ public class SymbolController {
     @Path("{hostId}/{PID}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSymbolProvider(@PathParam("hostId") String hostId, @PathParam("PID") String pid) {
+    public Response getSymbolProvider(
+            @NotNull @PathParam("hostId") final String hostId,
+            @NotNull @PathParam("PID") final String pid) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 
@@ -36,7 +39,10 @@ public class SymbolController {
     @Path("{hostId}/{PID}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getSymbolProvider(@PathParam("hostId") String hostId, @PathParam("PID") String pid, String url) {
+    public Response getSymbolProvider(
+            @NotNull @PathParam("hostId") final String hostId,
+            @NotNull @PathParam("PID") final String pid,
+            final String url) {
         return Response.status(Status.NOT_IMPLEMENTED).build();
     }
 }

@@ -2,23 +2,27 @@ package org.eclipse.trace.coordinator.xy;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.xy.XyModel;
-import org.eclipse.tsp.java.client.api.xy.XySerie;
+import org.eclipse.tsp.java.client.api.xy.dto.GetXyModelRequestDto;
+import org.eclipse.tsp.java.client.api.xy.dto.GetXyTreeRequestDto;
 import org.eclipse.tsp.java.client.shared.entry.Entry;
 import org.eclipse.tsp.java.client.shared.entry.EntryHeader;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
-import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -33,88 +37,85 @@ import jakarta.ws.rs.core.Response.Status;
 @ApplicationScoped
 public class XyController {
 
-    @Inject
-    XyService xyService;
+	@Inject
+	XyService xyService;
 
-    @Inject
-    TraceServerManager traceServerManager;
+	@Inject
+	TraceServerManager traceServerManager;
 
-    @POST
-    @Path("xy")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getXy(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
-            Query query) {
-        List<XySerie> series = new ArrayList<>();
-        String title = null;
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            GenericResponse<XyModel> genericResponse = this.xyService.getXy(traceServer, experimentUuid, outputId,
-                    query);
+	@POST
+	@Path("xy")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getXy(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@NotNull @Valid final Body<GetXyModelRequestDto> body) {
+		final GenericResponse<XyModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.xyService.getXy(traceServer, experimentUuid, outputId, body))
+				.filter(Objects::nonNull)
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
 
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
+						if (genericResponse.getModel() != null) {
+							accumulator.getModel().getSeries().addAll(genericResponse.getModel().getSeries());
+						}
+					}
 
-            if (genericResponse.getModel() != null) {
-                series.addAll(genericResponse.getModel().getSeries());
-            }
+					return accumulator;
+				});
 
-            if (title == null) {
-                title = genericResponse.getModel().getTitle();
-            }
-        }
+		return Response.ok(genericResponseMerged).build();
+	}
 
-        return Response.ok(new GenericResponse<XyModel>(new XyModel(title, series), responseStatus, statusMessage))
-                .build();
-    }
+	@POST
+	@Path("tree")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getTree(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@NotNull @Valid final Body<GetXyTreeRequestDto> body) {
+		final Set<EntryHeader> headers = new HashSet<>();
+		final GenericResponse<EntryModel<Entry>> genericResponseMerged = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.xyService.getTree(traceServer, experimentUuid, outputId, body))
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
 
-    @POST
-    @Path("tree")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTree(@PathParam("expUUID") UUID experimentUuid, @PathParam("outputId") String outputId,
-            Query query) {
-        Set<EntryHeader> headers = new HashSet<>();
-        List<Entry> entries = new ArrayList<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
+						if (genericResponse.getModel() != null) {
+							headers.addAll(genericResponse.getModel().getHeaders());
+							accumulator.getModel().getEntries().addAll(genericResponse.getModel().getEntries());
+						}
+					}
 
-        for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-            GenericResponse<EntryModel<Entry>> genericResponse = this.xyService.getTree(traceServer, experimentUuid,
-                    outputId,
-                    query);
+					return accumulator;
+				});
 
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
+		genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+		return Response.ok(genericResponseMerged).build();
+	}
 
-            if (genericResponse.getModel() != null) {
-                headers.addAll(genericResponse.getModel().getHeaders());
-                entries.addAll(genericResponse.getModel().getEntries());
-            }
-
-        }
-        int counter = 0;
-        for (Entry entry : entries) {
-            entry.setId(counter++);
-        }
-
-        return Response
-                .ok(new GenericResponse<EntryModel<Entry>>(new EntryModel<Entry>(new ArrayList<>(headers), entries),
-                        responseStatus,
-                        statusMessage))
-                .build();
-    }
-
-    @GET
-    @Path("tooltip")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTooltip() {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("tooltip")
+	@Consumes(MediaType.APPLICATION_JSON)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getTooltips() {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 }

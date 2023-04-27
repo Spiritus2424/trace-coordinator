@@ -1,97 +1,99 @@
 package org.eclipse.trace.coordinator.annotation;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.traceserver.TraceServerManager;
-import org.eclipse.tsp.java.client.api.annotation.Annotation;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationCategoriesModel;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationModel;
-import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.api.annotation.dto.GetAnnotationsRequestDto;
+import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("experiments/{expUUID}/outputs/{outputId}/annotations")
 @ApplicationScoped
 public class AnnotationController {
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @Inject
-    private AnnotationService annotationService;
+	@Inject
+	private AnnotationService annotationService;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getAnnotationCategories(@PathParam("expUUID") UUID experimentUuid,
-            @PathParam("outputId") String outputId,
-            @QueryParam("markerSetId") String markerSetId) {
-        Set<String> annotationCategories = new HashSet<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            GenericResponse<AnnotationCategoriesModel> genericResponse = this.annotationService
-                    .getAnnotationCategories(traceServer, experimentUuid, outputId,
-                            markerSetId != null ? Optional.of(markerSetId) : Optional.empty());
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
-            if (genericResponse.getModel() != null) {
-                annotationCategories.addAll(genericResponse.getModel().getAnnotationCategories());
-            }
-        }
+	@GET
+	public Response getAnnotationCategories(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@QueryParam("markerSetId") final String markerSetId) {
 
-        return Response.ok(new GenericResponse<AnnotationCategoriesModel>(
-                new AnnotationCategoriesModel(new ArrayList<>(annotationCategories)), responseStatus, statusMessage))
-                .build();
-    }
+		final GenericResponse<AnnotationCategoriesModel> genericResponseMerged = this.traceServerManager
+				.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.annotationService.getAnnotationCategories(traceServer,
+						experimentUuid, outputId, markerSetId != null ? Optional.of(markerSetId) : Optional.empty()))
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
+						if (genericResponse.getModel() != null) {
+							accumulator.getModel().getAnnotationCategories()
+									.addAll(genericResponse.getModel().getAnnotationCategories());
+						}
+					}
 
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response getAnnotation(@PathParam("expUUID") UUID experimentUuid,
-            @PathParam("outputId") String outputId, @NotNull Query query) {
+					return accumulator;
+				});
 
-        Map<String, List<Annotation>> annotationsModels = new HashMap<>();
-        ResponseStatus responseStatus = ResponseStatus.COMPLETED;
-        String statusMessage = null;
-        for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-            GenericResponse<AnnotationModel> genericResponse = this.annotationService.getAnnotationModel(traceServer,
-                    experimentUuid, outputId, query);
-            if (responseStatus != ResponseStatus.RUNNING) {
-                responseStatus = genericResponse.getStatus();
-                statusMessage = genericResponse.getMessage();
-            }
-            if (genericResponse.getModel() != null) {
+		return Response.ok(genericResponseMerged).build();
+	}
 
-                annotationsModels.putAll(genericResponse.getModel().getAnnotations());
-            }
-        }
+	@POST
+	public Response getAnnotation(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@NotNull @Valid final Body<GetAnnotationsRequestDto> body) {
+		final GenericResponse<AnnotationModel> genericResponseMerged = this.traceServerManager
+				.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> {
+					return this.annotationService.getAnnotationModel(traceServer, experimentUuid, outputId, body);
+				})
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
+						if (genericResponse.getModel() != null) {
+							accumulator.getModel().getAnnotations().putAll(genericResponse.getModel().getAnnotations());
+						}
+					}
 
-        return Response.ok(new GenericResponse<AnnotationModel>(
-                new AnnotationModel(annotationsModels), responseStatus, statusMessage))
-                .build();
-    }
+					return accumulator;
+				});
+
+		return Response.ok(genericResponseMerged).build();
+	}
 }

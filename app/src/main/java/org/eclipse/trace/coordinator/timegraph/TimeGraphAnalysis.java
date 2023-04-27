@@ -12,20 +12,20 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class TimeGraphAnalysis {
 
-    public void computeArrows(TraceServer traceServer, List<TimeGraphArrow> arrows) {
+    public void computeArrows(final TraceServer traceServer, final List<TimeGraphArrow> arrows) {
         for (TimeGraphArrow timeGraphArrow : arrows) {
             timeGraphArrow.setSourceId(traceServer.encodeEntryId(timeGraphArrow.getSourceId()));
             timeGraphArrow.setTargetId(traceServer.encodeEntryId(timeGraphArrow.getTargetId()));
         }
     }
 
-    public void computeStates(TraceServer traceServer, List<TimeGraphRow> rows) {
+    public void computeStates(final TraceServer traceServer, final List<TimeGraphRow> rows) {
         for (TimeGraphRow row : rows) {
             row.setEntryId(traceServer.encodeEntryId(row.getEntryId()));
         }
     }
 
-    public void computeTrees(TraceServer traceServer, List<TimeGraphEntry> entries) {
+    public void computeTrees(final TraceServer traceServer, final List<TimeGraphEntry> entries) {
         for (TimeGraphEntry entry : entries) {
             entry.setId(traceServer.encodeEntryId(entry.getId()));
             if (entry.getParentId() != -1) {

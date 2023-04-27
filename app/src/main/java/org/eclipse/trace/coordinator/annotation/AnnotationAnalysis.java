@@ -11,7 +11,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class AnnotationAnalysis {
 
-    public void computeAnnotationModel(TraceServer traceServer, Map<String, List<Annotation>> annotationModel) {
+    public void computeAnnotationModel(final TraceServer traceServer,
+            final Map<String, List<Annotation>> annotationModel) {
         for (List<Annotation> annotations : annotationModel.values()) {
             for (Annotation annotation : annotations) {
                 annotation.setEntryId(traceServer.encodeEntryId(annotation.getEntryId()));

@@ -43,10 +43,14 @@ dependencies {
     // This dependency is used by the application.
     providedCompile("jakarta.platform:jakarta.jakartaee-api:10.0.0")
     
-    implementation("org.eclipse:tsp-java-client-insiders:v2.0.3-alpha")
-    
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.1")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.1")
+    // Tsp Java Client
+    implementation("org.eclipse:tsp-java-client-insiders:v2.6.0-alpha")
+
+    // Jackson
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
+
+    // JUnit Jupiter
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
 }
 

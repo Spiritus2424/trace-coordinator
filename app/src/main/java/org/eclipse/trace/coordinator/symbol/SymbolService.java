@@ -7,11 +7,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class SymbolService {
 
-    public void createSymbolProvider(TraceServer traceServer, String hostId, String pid, String url) {
+    public void createSymbolProvider(final TraceServer traceServer, final String hostId, final String pid,
+            final String url) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 
-    public void getSymbolProvider(TraceServer traceServer, String hostId, String pid) {
+    public void getSymbolProvider(final TraceServer traceServer, final String hostId, final String pid) {
         throw new UnsupportedOperationException("Not Implemented");
     }
 }
