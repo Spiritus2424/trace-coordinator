@@ -43,8 +43,6 @@ public class AnnotationService {
 		return traceServer.getTspClient()
 				.getAnnotationApiAsync()
 				.getAnnotations(experimentUuid, outputId, newBody).thenApply((response) -> {
-					System.out.println(response.getStatusMessage());
-					System.out.println(response.getStatusCode());
 					this.annotationAnalysis.computeAnnotationModel(traceServer,
 							response.getResponseModel().getModel().getAnnotations());
 					return response.getResponseModel();
@@ -72,8 +70,6 @@ public class AnnotationService {
 		return traceServer.getTspClient()
 				.getAnnotationApiAsync()
 				.getAnnotations(experimentUuid, outputId, newBody).thenApply((response) -> {
-					System.out.println(response.getStatusMessage());
-					System.out.println(response.getStatusCode());
 					this.annotationAnalysis.computeAnnotationModel(traceServer,
 							response.getResponseModel().getModel().getAnnotations());
 					return response.getResponseModel();

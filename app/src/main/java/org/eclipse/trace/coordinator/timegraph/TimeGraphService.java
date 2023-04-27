@@ -85,11 +85,7 @@ public class TimeGraphService {
 		return (!newBody.getParameters().getRequestedItems().isEmpty())
 				? traceServer.getTspClient().getTimeGraphApiAsync()
 						.getTimeGraphTooltips(experimentUuid, outputId, newBody)
-						.thenApply(response -> {
-							System.out.println(response.getStatusMessage());
-							System.out.println(response.getStatusCode());
-							return response.getResponseModel();
-						})
+						.thenApply(response -> response.getResponseModel())
 				: null;
 	}
 

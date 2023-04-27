@@ -29,11 +29,7 @@ public class ExperimentService {
 	public CompletableFuture<Experiment> createExperiment(final TraceServer traceServer,
 			final Body<CreateExperimentRequestDto> body) {
 		return traceServer.getTspClient().getExperimentApiAsync().createExperiment(body)
-				.thenApply(response -> {
-					System.out.println(response.getStatusMessage());
-					System.out.println(response.getStatusCode());
-					return response.getResponseModel();
-				});
+				.thenApply(response -> response.getResponseModel());
 	}
 
 	public CompletableFuture<Experiment> updateExperiment(final TraceServer traceServer, final UUID experimentUuid,
