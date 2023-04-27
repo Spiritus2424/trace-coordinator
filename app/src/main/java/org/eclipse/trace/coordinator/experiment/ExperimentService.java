@@ -18,54 +18,32 @@ public class ExperimentService {
 
 	public CompletableFuture<List<Experiment>> getExperiments(final TraceServer traceServer) {
 		return traceServer.getTspClient().getExperimentApiAsync().getExperiments(Optional.empty())
-				.thenApply(response -> {
-					return response.getResponseModel();
-				});
+				.thenApply(response -> response.getResponseModel());
 	}
 
 	public CompletableFuture<Experiment> getExperiment(final TraceServer traceServer, final UUID experimentUuid) {
-		return traceServer.getTspClient().getExperimentApiAsync().getExperiment(experimentUuid).thenApply(response -> {
-			Experiment experiment = null;
-			if (response.isOk() && response.getResponseModel() != null) {
-				experiment = response.getResponseModel();
-			}
-			return experiment;
-		});
+		return traceServer.getTspClient().getExperimentApiAsync().getExperiment(experimentUuid)
+				.thenApply(response -> response.getResponseModel());
 	}
 
 	public CompletableFuture<Experiment> createExperiment(final TraceServer traceServer,
 			final Body<CreateExperimentRequestDto> body) {
-		return traceServer.getTspClient().getExperimentApiAsync().createExperiment(body).thenApply(response -> {
-			Experiment experiment = null;
-			if (response.isOk() && response.getResponseModel() != null) {
-				experiment = response.getResponseModel();
-			}
-			return experiment;
-		});
+		return traceServer.getTspClient().getExperimentApiAsync().createExperiment(body)
+				.thenApply(response -> {
+					System.out.println(response.getStatusMessage());
+					System.out.println(response.getStatusCode());
+					return response.getResponseModel();
+				});
 	}
 
 	public CompletableFuture<Experiment> updateExperiment(final TraceServer traceServer, final UUID experimentUuid,
 			final Body<UpdateExperimentRequestDto> body) {
 		return traceServer.getTspClient().getExperimentApiAsync().updateExperiment(experimentUuid, body)
-				.thenApply(response -> {
-					Experiment experiment = null;
-					if (response.isOk() && response.getResponseModel() != null) {
-						experiment = response.getResponseModel();
-					}
-
-					return experiment;
-				});
+				.thenApply(response -> response.getResponseModel());
 	}
 
 	public CompletableFuture<Experiment> deleteExperiment(final TraceServer traceServer, final UUID experimentUuid) {
 		return traceServer.getTspClient().getExperimentApiAsync().deleteExperiment(experimentUuid)
-				.thenApply(response -> {
-					Experiment experiment = null;
-					if (response.isOk() && response.getResponseModel() != null) {
-						experiment = response.getResponseModel();
-					}
-
-					return experiment;
-				});
+				.thenApply(response -> response.getResponseModel());
 	}
 }

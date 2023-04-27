@@ -43,6 +43,37 @@ public class AnnotationService {
 		return traceServer.getTspClient()
 				.getAnnotationApiAsync()
 				.getAnnotations(experimentUuid, outputId, newBody).thenApply((response) -> {
+					System.out.println(response.getStatusMessage());
+					System.out.println(response.getStatusCode());
+					this.annotationAnalysis.computeAnnotationModel(traceServer,
+							response.getResponseModel().getModel().getAnnotations());
+					return response.getResponseModel();
+				});
+	}
+
+	public CompletableFuture<GenericResponse<AnnotationModel>> getAnnotationModelQuery(
+			final TraceServer traceServer,
+			final UUID experimentUuid,
+			final String outputId,
+			final Body<GetAnnotationsRequestDto> body) {
+		final Body<GetAnnotationsRequestDto> newBody = new Body<GetAnnotationsRequestDto>(
+				new GetAnnotationsRequestDto(body.getParameters().getRequestedTimerange(), null,
+						body.getParameters().getRequestedMarkerSet(),
+						body.getParameters().getRequestedMarkerCategories()));
+		if (body.getParameters().getRequestedItems() != null) {
+			newBody.getParameters().setRequestedItems(List.copyOf(body.getParameters().getRequestedItems()).stream()
+					.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
+					.map((Integer encodeEntryId) -> {
+						return traceServer.decodeEntryId(encodeEntryId);
+					})
+					.collect(Collectors.toList()));
+		}
+
+		return traceServer.getTspClient()
+				.getAnnotationApiAsync()
+				.getAnnotations(experimentUuid, outputId, newBody).thenApply((response) -> {
+					System.out.println(response.getStatusMessage());
+					System.out.println(response.getStatusCode());
 					this.annotationAnalysis.computeAnnotationModel(traceServer,
 							response.getResponseModel().getModel().getAnnotations());
 					return response.getResponseModel();

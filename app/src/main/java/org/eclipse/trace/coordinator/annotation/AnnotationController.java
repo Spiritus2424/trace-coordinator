@@ -79,8 +79,9 @@ public class AnnotationController {
 		final GenericResponse<AnnotationModel> genericResponseMerged = this.traceServerManager
 				.getTraceServers()
 				.stream()
-				.map((TraceServer traceServer) -> this.annotationService.getAnnotationModel(traceServer,
-						experimentUuid, outputId, body))
+				.map((TraceServer traceServer) -> {
+					return this.annotationService.getAnnotationModel(traceServer, experimentUuid, outputId, body);
+				})
 				.map(CompletableFuture::join)
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {

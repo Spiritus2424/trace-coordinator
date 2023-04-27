@@ -32,7 +32,8 @@ public class TimeGraphService {
 			final UUID experimentUuid,
 			final String outputId,
 			final Body<GetTimeGraphArrowsRequestDto> body) {
-		return traceServer.getTspClient().getTimeGraphApiAsync().getTimeGraphArrows(experimentUuid, outputId, body)
+		return traceServer.getTspClient().getTimeGraphApiAsync()
+				.getTimeGraphArrows(experimentUuid, outputId, body)
 				.thenApply(response -> {
 					this.timeGraphAnalysis.computeArrows(traceServer, response.getResponseModel().getModel());
 					return response.getResponseModel();
@@ -56,7 +57,8 @@ public class TimeGraphService {
 
 		return (!newBody.getParameters().getRequestedItems().isEmpty())
 				? traceServer.getTspClient().getTimeGraphApiAsync()
-						.getTimeGraphStates(experimentUuid, outputId, newBody).thenApply(response -> {
+						.getTimeGraphStates(experimentUuid, outputId, newBody)
+						.thenApply(response -> {
 							this.timeGraphAnalysis.computeStates(traceServer,
 									response.getResponseModel().getModel().getRows());
 							return response.getResponseModel();
@@ -83,7 +85,11 @@ public class TimeGraphService {
 		return (!newBody.getParameters().getRequestedItems().isEmpty())
 				? traceServer.getTspClient().getTimeGraphApiAsync()
 						.getTimeGraphTooltips(experimentUuid, outputId, newBody)
-						.thenApply(response -> response.getResponseModel())
+						.thenApply(response -> {
+							System.out.println(response.getStatusMessage());
+							System.out.println(response.getStatusCode());
+							return response.getResponseModel();
+						})
 				: null;
 	}
 

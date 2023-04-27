@@ -122,6 +122,7 @@ public class ExperimentController {
 								CreateExperimentRequestDto createExperimentRequestDto = new CreateExperimentRequestDto(
 										body.getParameters().getExperimentName(),
 										traceServerTracesUuid);
+
 								return this.experimentService.createExperiment(traceServer,
 										new Body<CreateExperimentRequestDto>(createExperimentRequestDto));
 							});
