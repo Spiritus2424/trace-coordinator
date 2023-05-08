@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.style.OutputStyleModel;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Query;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 
@@ -19,6 +20,6 @@ public class StyleService {
 			final String outputId,
 			final Query query) {
 		return traceServer.getTspClient().getStyleApiAsync().getStyles(experimentUuid, outputId, query)
-				.thenApply(response -> response.getResponseModel());
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 }

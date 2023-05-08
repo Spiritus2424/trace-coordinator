@@ -28,6 +28,8 @@ import jakarta.ws.rs.core.Response;
 
 @Path("experiments/{expUUID}/outputs/table/{outputId}")
 @ApplicationScoped
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class VirtualTableController {
 
 	@Inject
@@ -38,8 +40,6 @@ public class VirtualTableController {
 
 	@POST
 	@Path("columns")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getColumns(@PathParam("expUUID") @NotNull UUID experimentUuid,
 			@PathParam("outputId") @NotNull String outputId, @NotNull Query query) {
 		GenericResponse<List<ColumnHeaderEntry>> genericResponseMerged = this.traceServerManager.getTraceServers()
@@ -68,8 +68,6 @@ public class VirtualTableController {
 
 	@POST
 	@Path("lines")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getLines(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,

@@ -11,6 +11,7 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.xy.XyModel;
 import org.eclipse.tsp.java.client.api.xy.dto.GetXyModelRequestDto;
 import org.eclipse.tsp.java.client.api.xy.dto.GetXyTreeRequestDto;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.entry.Entry;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
 import org.eclipse.tsp.java.client.shared.query.Body;
@@ -32,11 +33,11 @@ public class XyService {
 			final Body<GetXyModelRequestDto> body) {
 
 		final List<Integer> traceServerRequestedItems = List.copyOf(body.getParameters().getRequestedItems()).stream()
-				.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
-				.map(encodeEntryId -> traceServer.decodeEntryId(encodeEntryId))
+				.filter(traceServer::isValidEncodeEntryId)
+				.map(traceServer::decodeEntryId)
 				.collect(Collectors.toList());
 
-		final Body<GetXyModelRequestDto> newBody = new Body<GetXyModelRequestDto>(
+		final Body<GetXyModelRequestDto> newBody = new Body<>(
 				new GetXyModelRequestDto(
 						body.getParameters().getRequestedTimerange(),
 						traceServerRequestedItems));
@@ -73,6 +74,6 @@ public class XyService {
 			final Optional<String> seriesId) {
 		return traceServer.getTspClient().getXyApiAsync()
 				.getXyTooltips(experimentUuid, outputId, xValue, yValue, seriesId)
-				.thenApply(response -> response.getResponseModel());
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 }

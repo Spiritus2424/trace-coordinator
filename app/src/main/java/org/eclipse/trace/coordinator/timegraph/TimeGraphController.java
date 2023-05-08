@@ -40,6 +40,8 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments/{expUUID}/outputs/timeGraph/{outputId}")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class TimeGraphController {
 
 	@Inject
@@ -50,8 +52,6 @@ public class TimeGraphController {
 
 	@POST
 	@Path("arrows")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getArrows(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
@@ -82,8 +82,6 @@ public class TimeGraphController {
 
 	@POST
 	@Path("states")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStates(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
@@ -115,8 +113,6 @@ public class TimeGraphController {
 
 	@POST
 	@Path("tooltip")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTooltips(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
@@ -149,8 +145,6 @@ public class TimeGraphController {
 
 	@POST
 	@Path("tree")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTree(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
@@ -184,8 +178,6 @@ public class TimeGraphController {
 
 	@POST
 	@Path("navigate/states")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getNavigations(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,

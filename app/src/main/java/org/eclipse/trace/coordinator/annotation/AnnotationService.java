@@ -10,6 +10,7 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationCategoriesModel;
 import org.eclipse.tsp.java.client.api.annotation.AnnotationModel;
 import org.eclipse.tsp.java.client.api.annotation.dto.GetAnnotationsRequestDto;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 
@@ -27,49 +28,20 @@ public class AnnotationService {
 			final UUID experimentUuid,
 			final String outputId,
 			final Body<GetAnnotationsRequestDto> body) {
-		final Body<GetAnnotationsRequestDto> newBody = new Body<GetAnnotationsRequestDto>(
+		final Body<GetAnnotationsRequestDto> newBody = new Body<>(
 				new GetAnnotationsRequestDto(body.getParameters().getRequestedTimerange(), null,
 						body.getParameters().getRequestedMarkerSet(),
 						body.getParameters().getRequestedMarkerCategories()));
 		if (body.getParameters().getRequestedItems() != null) {
 			newBody.getParameters().setRequestedItems(List.copyOf(body.getParameters().getRequestedItems()).stream()
-					.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
-					.map((Integer encodeEntryId) -> {
-						return traceServer.decodeEntryId(encodeEntryId);
-					})
+					.filter(traceServer::isValidEncodeEntryId)
+					.map(traceServer::decodeEntryId)
 					.collect(Collectors.toList()));
 		}
 
 		return traceServer.getTspClient()
 				.getAnnotationApiAsync()
-				.getAnnotations(experimentUuid, outputId, newBody).thenApply((response) -> {
-					this.annotationAnalysis.computeAnnotationModel(traceServer,
-							response.getResponseModel().getModel().getAnnotations());
-					return response.getResponseModel();
-				});
-	}
-
-	public CompletableFuture<GenericResponse<AnnotationModel>> getAnnotationModelQuery(
-			final TraceServer traceServer,
-			final UUID experimentUuid,
-			final String outputId,
-			final Body<GetAnnotationsRequestDto> body) {
-		final Body<GetAnnotationsRequestDto> newBody = new Body<GetAnnotationsRequestDto>(
-				new GetAnnotationsRequestDto(body.getParameters().getRequestedTimerange(), null,
-						body.getParameters().getRequestedMarkerSet(),
-						body.getParameters().getRequestedMarkerCategories()));
-		if (body.getParameters().getRequestedItems() != null) {
-			newBody.getParameters().setRequestedItems(List.copyOf(body.getParameters().getRequestedItems()).stream()
-					.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
-					.map((Integer encodeEntryId) -> {
-						return traceServer.decodeEntryId(encodeEntryId);
-					})
-					.collect(Collectors.toList()));
-		}
-
-		return traceServer.getTspClient()
-				.getAnnotationApiAsync()
-				.getAnnotations(experimentUuid, outputId, newBody).thenApply((response) -> {
+				.getAnnotations(experimentUuid, outputId, newBody).thenApply(response -> {
 					this.annotationAnalysis.computeAnnotationModel(traceServer,
 							response.getResponseModel().getModel().getAnnotations());
 					return response.getResponseModel();
@@ -83,6 +55,6 @@ public class AnnotationService {
 
 		return traceServer.getTspClient().getAnnotationApiAsync()
 				.getAnnotationsCategories(experimentUuid, outputId, markerSetId)
-				.thenApply(response -> response.getResponseModel());
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 }

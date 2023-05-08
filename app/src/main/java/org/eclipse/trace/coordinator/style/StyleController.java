@@ -26,17 +26,17 @@ import jakarta.ws.rs.core.Response;
  */
 @Path("experiments/{expUUID}/outputs/{outputId}/style")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class StyleController {
 
 	@Inject
-	StyleService styleService;
+	private StyleService styleService;
 
 	@Inject
-	TraceServerManager traceServerManager;
+	private TraceServerManager traceServerManager;
 
 	@POST
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getStyles(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
