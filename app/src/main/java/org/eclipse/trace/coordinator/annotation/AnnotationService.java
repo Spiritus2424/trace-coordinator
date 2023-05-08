@@ -13,17 +13,17 @@ import org.eclipse.tsp.java.client.api.annotation.dto.GetAnnotationsRequestDto;
 import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
+import org.jvnet.hk2.annotations.Service;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-@ApplicationScoped
+@Service
 public class AnnotationService {
 
 	@Inject
 	private AnnotationAnalysis annotationAnalysis;
 
-	public CompletableFuture<GenericResponse<AnnotationModel>> getAnnotationModel(
+	public final CompletableFuture<GenericResponse<AnnotationModel>> getAnnotationModel(
 			final TraceServer traceServer,
 			final UUID experimentUuid,
 			final String outputId,
@@ -34,7 +34,7 @@ public class AnnotationService {
 						body.getParameters().getRequestedMarkerCategories()));
 		if (body.getParameters().getRequestedItems() != null) {
 			newBody.getParameters().setRequestedItems(List.copyOf(body.getParameters().getRequestedItems()).stream()
-					.filter(traceServer::isValidEncodeEntryId)
+					.filter((Integer number) -> traceServer.isValidEncodeEntryId(number))
 					.map(traceServer::decodeEntryId)
 					.collect(Collectors.toList()));
 		}
@@ -48,9 +48,9 @@ public class AnnotationService {
 				});
 	}
 
-	public CompletableFuture<GenericResponse<AnnotationCategoriesModel>> getAnnotationCategories(
+	public final CompletableFuture<GenericResponse<AnnotationCategoriesModel>> getAnnotationCategories(
 			final TraceServer traceServer,
-			final UUID experimentUuid, String outputId,
+			final UUID experimentUuid, final String outputId,
 			final Optional<String> markerSetId) {
 
 		return traceServer.getTspClient().getAnnotationApiAsync()

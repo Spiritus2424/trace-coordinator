@@ -5,10 +5,9 @@ import java.util.List;
 import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.xy.XySerie;
 import org.eclipse.tsp.java.client.shared.entry.Entry;
+import org.jvnet.hk2.annotations.Service;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
+@Service
 public class XyAnalysis {
 
 	public void computeXy(TraceServer traceServer, List<XySerie> xySeries) {

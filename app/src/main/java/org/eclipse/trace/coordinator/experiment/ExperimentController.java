@@ -18,7 +18,6 @@ import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +35,6 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments")
-@ApplicationScoped
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ExperimentController {
@@ -130,7 +128,7 @@ public class ExperimentController {
 	}
 
 	@PUT
-	@Path("{expUUID")
+	@Path("{expUUID}")
 	public Response updateExperiment(@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@QueryParam("name") String experimentName, @NotNull Query query) {
 		return Response.status(Status.NOT_IMPLEMENTED).build();

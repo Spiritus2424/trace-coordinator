@@ -8,10 +8,9 @@ import org.eclipse.tsp.java.client.api.style.OutputStyleModel;
 import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Query;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
+import org.jvnet.hk2.annotations.Service;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
+@Service
 public class StyleService {
 
 	public CompletableFuture<GenericResponse<OutputStyleModel>> getStyles(

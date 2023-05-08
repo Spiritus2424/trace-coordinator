@@ -1,9 +1,14 @@
 package org.eclipse.trace.coordinator;
 
+import org.glassfish.jersey.server.ResourceConfig;
+
 import jakarta.ws.rs.ApplicationPath;
-import jakarta.ws.rs.core.Application;
 
 @ApplicationPath("tsp/api")
-public class TraceCoordinatorApplication extends Application {
+public class TraceCoordinatorApplication extends ResourceConfig {
+	public TraceCoordinatorApplication() {
+		packages("org.eclipse.trace.coordinator");
+		register(AutoScanFeature.class);
+	}
 
 }

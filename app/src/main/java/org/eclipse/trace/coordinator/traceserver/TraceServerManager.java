@@ -7,40 +7,40 @@ import java.util.List;
 
 import org.eclipse.trace.coordinator.configuration.Configuration;
 import org.eclipse.trace.coordinator.traceserver.properties.TraceServerProperties;
+import org.jvnet.hk2.annotations.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
 import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
 
-@ApplicationScoped
+@Service
 public class TraceServerManager {
 
-    private List<TraceServer> traceServers;
+	private List<TraceServer> traceServers;
 
-    public TraceServerManager() {
-        this.traceServers = new ArrayList<>();
-    }
+	public TraceServerManager() {
+		this.traceServers = new ArrayList<>();
+	}
 
-    @PostConstruct
-    public void loadTraceServers() {
-        String fileName = System.getProperty("TRACE_COORDINATOR_FILE");
-        File file = new File(fileName != null ? fileName : ".trace-coordinator.yml");
-        ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
+	@PostConstruct
+	public void loadTraceServers() {
+		String fileName = System.getProperty("TRACE_COORDINATOR_FILE");
+		File file = new File(fileName != null ? fileName : ".trace-coordinator.yml");
+		ObjectMapper objectMapper = new ObjectMapper(new YAMLFactory());
 
-        try {
-            List<TraceServerProperties> listOfTraceServerProperties = objectMapper
-                    .readValue(file, Configuration.class).getTraceServerProperties();
-            for (TraceServerProperties traceServerProperties : listOfTraceServerProperties) {
-                this.traceServers.add(traceServerProperties.toObject());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+		try {
+			List<TraceServerProperties> listOfTraceServerProperties = objectMapper
+					.readValue(file, Configuration.class).getTraceServerProperties();
+			for (TraceServerProperties traceServerProperties : listOfTraceServerProperties) {
+				this.traceServers.add(traceServerProperties.toObject());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-    public List<TraceServer> getTraceServers() {
-        return traceServers;
-    }
+	public List<TraceServer> getTraceServers() {
+		return traceServers;
+	}
 }

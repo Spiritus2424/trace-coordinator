@@ -10,10 +10,9 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.trace.Trace;
 import org.eclipse.tsp.java.client.api.trace.dto.OpenTraceRequestDto;
 import org.eclipse.tsp.java.client.shared.query.Body;
+import org.jvnet.hk2.annotations.Service;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
+@Service
 public class TraceService {
 
 	public CompletableFuture<Trace> getTrace(final TraceServer traceServer, final UUID traceUuid) {

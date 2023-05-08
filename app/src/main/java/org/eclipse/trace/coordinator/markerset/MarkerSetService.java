@@ -8,10 +8,9 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.markerset.MarkerSet;
 import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
+import org.jvnet.hk2.annotations.Service;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
+@Service
 public class MarkerSetService {
 
 	public CompletableFuture<GenericResponse<Set<MarkerSet>>> getMarkerSets(final TraceServer traceServer,

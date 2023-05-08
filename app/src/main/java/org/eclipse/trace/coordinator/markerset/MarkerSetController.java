@@ -10,7 +10,6 @@ import org.eclipse.tsp.java.client.api.markerset.MarkerSet;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
@@ -25,7 +24,6 @@ import jakarta.ws.rs.core.Response;
  * MarkerSetController
  */
 @Path("experiments/{expUUID}/outputs/markerSets")
-@ApplicationScoped
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class MarkerSetController {

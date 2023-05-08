@@ -11,10 +11,9 @@ import org.eclipse.tsp.java.client.api.experiment.dto.CreateExperimentRequestDto
 import org.eclipse.tsp.java.client.api.experiment.dto.UpdateExperimentRequestDto;
 import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Body;
+import org.jvnet.hk2.annotations.Service;
 
-import jakarta.enterprise.context.ApplicationScoped;
-
-@ApplicationScoped
+@Service
 public class ExperimentService {
 
 	public CompletableFuture<List<Experiment>> getExperiments(final TraceServer traceServer) {
