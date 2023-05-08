@@ -1,20 +1,20 @@
 package org.eclipse.trace.coordinator;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import jakarta.ws.rs.SeBootstrap;
-import jakarta.ws.rs.SeBootstrap.Configuration;
 import jakarta.ws.rs.SeBootstrap.Instance;
 
 public class Main {
+
 	public static void main(String[] args) throws InterruptedException {
+		TraceCoordinatorApplication traceCoordinatorApplication = new TraceCoordinatorApplication();
+		Instance instance = SeBootstrap.start(traceCoordinatorApplication).toCompletableFuture().join();
 
-		Configuration config = SeBootstrap.Configuration.builder()
-				.rootPath("tsp/api")
-				.port(8080)
-				.build();
+		Logger.getLogger(Main.class.getName()).log(Level.INFO, "Listening on {0}",
+				instance.configuration().baseUri().toString());
 
-		Instance instance = SeBootstrap.start(new TraceCoordinatorApplication(), config).toCompletableFuture().join();
-
-		System.out.println(instance.configuration().baseUri().toString());
 		Thread.currentThread().join();
 	}
 }
