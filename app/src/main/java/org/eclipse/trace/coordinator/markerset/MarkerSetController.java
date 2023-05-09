@@ -26,6 +26,8 @@ import jakarta.ws.rs.core.Response;
  */
 @Path("experiments/{expUUID}/outputs/markerSets")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class MarkerSetController {
 
 	@Inject
@@ -35,8 +37,6 @@ public class MarkerSetController {
 	private MarkerSetService markerSetService;
 
 	@GET
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getMarkerSets(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
 		final GenericResponse<Set<MarkerSet>> genericResponseMerged = this.traceServerManager.getTraceServers()
 				.stream()

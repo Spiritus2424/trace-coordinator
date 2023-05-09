@@ -21,52 +21,44 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("filters")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class FilterController {
 
-    @Inject
-    private FilterService filterService;
+	@Inject
+	private FilterService filterService;
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @GET
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getFilters() {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	public Response getFilters() {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @GET
-    @Path("{filterId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getFilter(@NotNull @PathParam("filterId") final String filterId) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("{filterId}")
+	public Response getFilter(@NotNull @PathParam("filterId") final String filterId) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createFilter(@NotNull @Valid final Filter Filter) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@POST
+	public Response createFilter(@NotNull @Valid final Filter filter) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @PUT
-    @Path("{filterId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateFilter(
-            @NotNull @PathParam("filterId") final String filterId,
-            @NotNull @Valid final Filter filter) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@PUT
+	@Path("{filterId}")
+	public Response updateFilter(
+			@NotNull @PathParam("filterId") final String filterId,
+			@NotNull @Valid final Filter filter) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @DELETE
-    @Path("{filterId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteFilter(@NotNull @PathParam("filterId") final String filterId) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@DELETE
+	@Path("{filterId}")
+	public Response deleteFilter(@NotNull @PathParam("filterId") final String filterId) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
 }

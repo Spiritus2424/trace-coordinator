@@ -8,6 +8,7 @@ import org.eclipse.trace.coordinator.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.table.ColumnHeaderEntry;
 import org.eclipse.tsp.java.client.api.table.TableModel;
 import org.eclipse.tsp.java.client.api.table.dto.GetTableLinesRequestDto;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
@@ -23,7 +24,7 @@ public class VirtualTableService {
 			final String outputId,
 			final Query query) {
 		return traceServer.getTspClient().getTableApiAsync().getTableColumns(experimentUuid, outputId, query)
-				.thenApply(response -> response.getResponseModel());
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 
 	public CompletableFuture<GenericResponse<TableModel>> getLines(
@@ -32,6 +33,6 @@ public class VirtualTableService {
 			final String outputId,
 			final Body<GetTableLinesRequestDto> body) {
 		return traceServer.getTspClient().getTableApiAsync().getTableLines(experimentUuid, outputId, body)
-				.thenApply(response -> response.getResponseModel());
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 }

@@ -14,27 +14,25 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("about")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class FeatureController {
 
-    @Inject
-    private FeatureService featureService;
+	@Inject
+	private FeatureService featureService;
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @GET
-    @Path("traceTypes")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getSupportedTracesTypes() {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("traceTypes")
+	public Response getSupportedTracesTypes() {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @GET
-    @Path("outputTypes")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getSupportedOutputTypes() {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("outputTypes")
+	public Response getSupportedOutputTypes() {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 }

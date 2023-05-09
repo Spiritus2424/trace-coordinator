@@ -23,57 +23,49 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments/{expUUID}/bookmarks")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class BookmarkController {
-    @Inject
-    private BookmarkService bookmarkService;
+	@Inject
+	private BookmarkService bookmarkService;
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @GET
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookmarks(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	public Response getBookmarks(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @GET
-    @Path("{bookmarkId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getBookmark(
-            @NotNull @PathParam("expUUID") final UUID experimentUuid,
-            @NotNull @PathParam("bookmarkId") final UUID bookmarkUuid) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("{bookmarkId}")
+	public Response getBookmark(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("bookmarkId") final UUID bookmarkUuid) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createBookmark(
-            @NotNull @PathParam("expUUID") final UUID experimentUuid,
-            @NotNull @Valid final Bookmark bookmark) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@POST
+	public Response createBookmark(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @Valid final Bookmark bookmark) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @PUT
-    @Path("{bookmarkId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response updateBookmark(
-            @NotNull @PathParam("expUUID") final UUID experimentUuid,
-            @NotNull @PathParam("bookmarkId") final UUID bookmarkUuid,
-            @NotNull @Valid final Bookmark bookmark) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@PUT
+	@Path("{bookmarkId}")
+	public Response updateBookmark(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("bookmarkId") final UUID bookmarkUuid,
+			@NotNull @Valid final Bookmark bookmark) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @DELETE
-    @Path("{bookmarkId}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteBookmark(
-            @NotNull @PathParam("expUUID") final UUID experimentUuid,
-            @NotNull @PathParam("bookmarkId") final UUID bookmarkUuid) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@DELETE
+	@Path("{bookmarkId}")
+	public Response deleteBookmark(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("bookmarkId") final UUID bookmarkUuid) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 }

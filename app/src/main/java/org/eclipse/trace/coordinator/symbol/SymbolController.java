@@ -17,32 +17,30 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("symbols")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class SymbolController {
 
-    @Inject
-    private SymbolService symbolService;
+	@Inject
+	private SymbolService symbolService;
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @GET
-    @Path("{hostId}/{PID}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getSymbolProvider(
-            @NotNull @PathParam("hostId") final String hostId,
-            @NotNull @PathParam("PID") final String pid) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@GET
+	@Path("{hostId}/{PID}")
+	public Response getSymbolProvider(
+			@NotNull @PathParam("hostId") final String hostId,
+			@NotNull @PathParam("PID") final String pid) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
-    @POST
-    @Path("{hostId}/{PID}")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getSymbolProvider(
-            @NotNull @PathParam("hostId") final String hostId,
-            @NotNull @PathParam("PID") final String pid,
-            final String url) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@POST
+	@Path("{hostId}/{PID}")
+	public Response getSymbolProvider(
+			@NotNull @PathParam("hostId") final String hostId,
+			@NotNull @PathParam("PID") final String pid,
+			final String url) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 }

@@ -22,31 +22,36 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class ExperimentController {
 
 	@Inject
-	ExperimentService experimentService;
+	private ExperimentService experimentService;
 
 	// @Inject
 	// DistributedExperimentManager distributedExperimentManager;
 
 	@Inject
-	TraceServerManager traceServerManager;
+	private TraceServerManager traceServerManager;
 
 	@Inject
-	TraceService traceService;
+	private TraceService traceService;
 
 	@PostConstruct
 	public void createExperiments() {
@@ -68,9 +73,7 @@ public class ExperimentController {
 	@GET
 	public Response getExperiments() {
 		final List<Experiment> distributedExperiments = this.traceServerManager.getTraceServers().stream()
-				.map(traceSercer -> {
-					return this.experimentService.getExperiments(traceSercer);
-				})
+				.map(traceSercer -> this.experimentService.getExperiments(traceSercer))
 				.map(CompletableFuture::join)
 				.flatMap(List::stream)
 				.collect(groupingBy(Experiment::getUuid))
@@ -86,14 +89,12 @@ public class ExperimentController {
 	@Path("{expUUID}")
 	public Response getExperiment(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
 		final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
-				.map(traceSercer -> {
-					return this.experimentService.getExperiment(traceSercer, experimentUuid);
-				})
+				.map(traceSercer -> this.experimentService.getExperiment(traceSercer, experimentUuid))
 				.map(CompletableFuture::join)
 				.collect(Collectors.toList());
 
 		Response response = null;
-		if (experiments.size() != 0) {
+		if (!experiments.isEmpty()) {
 			response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
 		} else {
 			response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();
@@ -105,24 +106,21 @@ public class ExperimentController {
 	@POST
 	public Response createExperiment(@NotNull @Valid final Body<CreateExperimentRequestDto> body) {
 		final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
-				.map((TraceServer traceServer) -> {
-					return this.traceService.getTraces(traceServer)
-							.thenApply((List<Trace> traces) -> {
-								List<UUID> traceServerTracesUuid = traces.stream()
-										.filter((Trace trace) -> {
-											return body.getParameters().getTraces().contains(trace.getUuid());
-										})
-										.map((Trace trace) -> trace.getUuid())
-										.collect(Collectors.toList());
+				.map((TraceServer traceServer) -> this.traceService.getTraces(traceServer)
+						.thenApply((List<Trace> traces) -> {
+							List<UUID> traceServerTracesUuid = traces.stream()
+									.filter((Trace trace) -> body.getParameters().getTraces()
+											.contains(trace.getUuid()))
+									.map(Trace::getUuid)
+									.collect(Collectors.toList());
 
-								CreateExperimentRequestDto createExperimentRequestDto = new CreateExperimentRequestDto(
-										body.getParameters().getExperimentName(),
-										traceServerTracesUuid);
+							CreateExperimentRequestDto createExperimentRequestDto = new CreateExperimentRequestDto(
+									body.getParameters().getExperimentName(),
+									traceServerTracesUuid);
 
-								return this.experimentService.createExperiment(traceServer,
-										new Body<CreateExperimentRequestDto>(createExperimentRequestDto));
-							});
-				})
+							return this.experimentService.createExperiment(traceServer,
+									new Body<>(createExperimentRequestDto));
+						}))
 				.map(CompletableFuture::join)
 				.map(CompletableFuture::join)
 				.filter(Objects::nonNull)
@@ -147,7 +145,7 @@ public class ExperimentController {
 				.collect(Collectors.toList());
 
 		Response response = null;
-		if (experiments.size() != 0) {
+		if (!experiments.isEmpty()) {
 			response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
 		} else {
 			response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();

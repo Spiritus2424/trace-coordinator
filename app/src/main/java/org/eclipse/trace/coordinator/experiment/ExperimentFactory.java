@@ -7,6 +7,9 @@ import org.eclipse.tsp.java.client.shared.indexing.IndexingStatus;
 
 public class ExperimentFactory {
 
+	private ExperimentFactory() {
+	}
+
 	public static Experiment createExperiment(List<Experiment> experiments) {
 		return experiments.stream()
 				.reduce(null, (distributedExperiment, experiment) -> {

@@ -14,6 +14,7 @@ import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphArrowsRequestDt
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphStatesRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTooltipsRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTreeRequestDto;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
@@ -48,12 +49,11 @@ public class TimeGraphService {
 		final Body<GetTimeGraphStatesRequestDto> newBody = new Body<>(
 				new GetTimeGraphStatesRequestDto(
 						body.getParameters().getRequestedTimerange(),
-						List.copyOf(body.getParameters().getRequestedItems())));
-
-		newBody.getParameters().getRequestedItems().stream()
-				.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
-				.map(encodeEntryId -> traceServer.decodeEntryId(encodeEntryId))
-				.collect(Collectors.toList());
+						body.getParameters().getRequestedItems()
+								.stream()
+								.filter(traceServer::isValidEncodeEntryId)
+								.map(traceServer::decodeEntryId)
+								.collect(Collectors.toList())));
 
 		return (!newBody.getParameters().getRequestedItems().isEmpty())
 				? traceServer.getTspClient().getTimeGraphApiAsync()
@@ -75,17 +75,16 @@ public class TimeGraphService {
 				new GetTimeGraphTooltipsRequestDto(
 						body.getParameters().getRequestedElement(),
 						body.getParameters().getRequestedTimes(),
-						List.copyOf(body.getParameters().getRequestedItems())));
-		newBody.getParameters().getRequestedItems()
-				.stream()
-				.filter((Integer encodeEntryId) -> traceServer.isValidEncodeEntryId(encodeEntryId))
-				.map(encodeEntryId -> traceServer.decodeEntryId(encodeEntryId))
-				.collect(Collectors.toList());
+						body.getParameters().getRequestedItems()
+								.stream()
+								.filter(traceServer::isValidEncodeEntryId)
+								.map(traceServer::decodeEntryId)
+								.collect(Collectors.toList())));
 
 		return (!newBody.getParameters().getRequestedItems().isEmpty())
 				? traceServer.getTspClient().getTimeGraphApiAsync()
 						.getTimeGraphTooltips(experimentUuid, outputId, newBody)
-						.thenApply(response -> response.getResponseModel())
+						.thenApply(TspClientResponse::getResponseModel)
 				: null;
 	}
 

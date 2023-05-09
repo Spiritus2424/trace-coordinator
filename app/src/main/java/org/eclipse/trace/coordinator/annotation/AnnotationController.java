@@ -17,15 +17,20 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 @Path("experiments/{expUUID}/outputs/{outputId}/annotations")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class AnnotationController {
 
 	@Inject
@@ -74,9 +79,8 @@ public class AnnotationController {
 		final GenericResponse<AnnotationModel> genericResponseMerged = this.traceServerManager
 				.getTraceServers()
 				.stream()
-				.map((TraceServer traceServer) -> {
-					return this.annotationService.getAnnotationModel(traceServer, experimentUuid, outputId, body);
-				})
+				.map(traceServer -> this.annotationService.getAnnotationModel(traceServer, experimentUuid, outputId,
+						body))
 				.map(CompletableFuture::join)
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {

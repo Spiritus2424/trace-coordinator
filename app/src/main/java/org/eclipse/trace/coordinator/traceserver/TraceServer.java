@@ -6,7 +6,7 @@ import java.util.List;
 import org.eclipse.tsp.java.client.core.tspclient.TspClient;
 
 public class TraceServer {
-	private static int NUMBER_OF_TRACE_SERVER = 0;
+	private static int numberOfTraceServer = 0;
 
 	private final int id;
 	private URI uri;
@@ -21,7 +21,7 @@ public class TraceServer {
 
 		this.tspClient = new TspClient(this.uri.toString());
 
-		this.id = TraceServer.NUMBER_OF_TRACE_SERVER++;
+		this.id = TraceServer.numberOfTraceServer++;
 	}
 
 	public int getId() {
@@ -48,8 +48,8 @@ public class TraceServer {
 		return tspClient;
 	}
 
-	public int encodeEntryId(int entryId) throws ArithmeticException {
-		final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+	public Integer encodeEntryId(int entryId) throws ArithmeticException {
+		final Integer step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
 		if (entryId > step) {
 			throw new ArithmeticException(
 					String.format("The entry id is too big %d, it should be between [%d,%d[ for server %d", entryId,
@@ -58,7 +58,7 @@ public class TraceServer {
 		return entryId + step * this.id;
 	}
 
-	public int decodeEntryId(int encodeEntryId) throws ArithmeticException {
+	public Integer decodeEntryId(Integer encodeEntryId) throws ArithmeticException {
 		if (!isValidEncodeEntryId(encodeEntryId)) {
 			throw new ArithmeticException(
 					String.format("The encode entry id %d is not valid [%d,%d[ for server %d", encodeEntryId,
@@ -67,17 +67,17 @@ public class TraceServer {
 		return encodeEntryId - this.getLowerInterval();
 	}
 
-	public boolean isValidEncodeEntryId(int encodeEntryId) {
+	public boolean isValidEncodeEntryId(Integer encodeEntryId) {
 		return encodeEntryId >= this.getLowerInterval() && encodeEntryId < this.getHigherInterval();
 	}
 
-	private int getLowerInterval() {
-		final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+	private Integer getLowerInterval() {
+		final Integer step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
 		return step * this.id;
 	}
 
-	private int getHigherInterval() {
-		final int step = (Integer.MAX_VALUE / TraceServer.NUMBER_OF_TRACE_SERVER);
+	private Integer getHigherInterval() {
+		final Integer step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
 		return (step * (this.id + 1));
 	}
 

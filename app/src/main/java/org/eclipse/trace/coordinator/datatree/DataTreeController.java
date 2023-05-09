@@ -19,23 +19,23 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments/{expUUID}/outputs/data/{outputId}")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class DataTreeController {
 
-    @Inject
-    private DataTreeService dataTreeService;
+	@Inject
+	private DataTreeService dataTreeService;
 
-    @Inject
-    private TraceServerManager traceServerManager;
+	@Inject
+	private TraceServerManager traceServerManager;
 
-    @POST
-    @Path("tree")
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getTree(
-            @PathParam("expUUID") final UUID experimentUuid,
-            @PathParam("outputId") final String outputId,
-            @Valid final Query query) {
-        return Response.status(Status.NOT_IMPLEMENTED).build();
-    }
+	@POST
+	@Path("tree")
+	public Response getTree(
+			@PathParam("expUUID") final UUID experimentUuid,
+			@PathParam("outputId") final String outputId,
+			@Valid final Query query) {
+		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
 
 }

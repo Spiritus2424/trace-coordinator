@@ -24,18 +24,18 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("/experiments/{expUUID}/outputs")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class OutputDescriptorController {
 
 	@Inject
-	OutputDescriptorService outputDescriptorService;
+	private OutputDescriptorService outputDescriptorService;
 
 	@Inject
-	TraceServerManager traceServerManager;
+	private TraceServerManager traceServerManager;
 
 	@GET
 	@Path("")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getOutputDescriptors(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
 		final Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
 				.stream()
@@ -50,8 +50,6 @@ public class OutputDescriptorController {
 
 	@GET
 	@Path("{outputId}")
-	@Produces(MediaType.APPLICATION_JSON)
-	@Consumes(MediaType.APPLICATION_JSON)
 	public Response getOutputDescriptor(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId) {

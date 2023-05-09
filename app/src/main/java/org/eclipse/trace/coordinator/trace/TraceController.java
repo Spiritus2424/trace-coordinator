@@ -17,17 +17,23 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
 @Path("traces")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class TraceController {
+	private static final String NO_SUCH_TRACE = "No Such Trace";
 
 	@Inject
 	private TraceService traceService;
@@ -42,7 +48,7 @@ public class TraceController {
 				String[] uri = tracePath.split("/");
 				OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(tracePath);
 				openTraceRequestDto.setName(String.format("%s$%s", traceServer.getHost(), uri[uri.length - 1]));
-				this.traceService.openTrace(traceServer, new Body<OpenTraceRequestDto>(openTraceRequestDto));
+				this.traceService.openTrace(traceServer, new Body<>(openTraceRequestDto));
 			}
 		}
 	}
@@ -70,7 +76,7 @@ public class TraceController {
 		if (trace.isPresent()) {
 			response = Response.ok(trace.get()).build();
 		} else {
-			response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+			response = Response.status(Status.NOT_FOUND).entity(NO_SUCH_TRACE).build();
 		}
 
 		return response;
@@ -92,17 +98,17 @@ public class TraceController {
 
 					OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(body.getParameters().getUri(),
 							String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")), null);
-					return this.traceService.openTrace(traceServer, new Body<OpenTraceRequestDto>(openTraceRequestDto));
+					return this.traceService.openTrace(traceServer, new Body<>(openTraceRequestDto));
 				})
 				.map(CompletableFuture::join)
 				.flatMap(List::stream)
 				.collect(Collectors.toList());
 
 		Response response = null;
-		if (traces.size() != 0) {
+		if (!traces.isEmpty()) {
 			response = Response.ok(traces).build();
 		} else {
-			response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+			response = Response.status(Status.NOT_FOUND).entity(NO_SUCH_TRACE).build();
 		}
 
 		return response;
@@ -120,7 +126,7 @@ public class TraceController {
 		if (trace.isPresent()) {
 			response = Response.ok(trace.get()).build();
 		} else {
-			response = Response.status(Status.NOT_FOUND).entity("No Such Trace").build();
+			response = Response.status(Status.NOT_FOUND).entity(NO_SUCH_TRACE).build();
 		}
 
 		return response;

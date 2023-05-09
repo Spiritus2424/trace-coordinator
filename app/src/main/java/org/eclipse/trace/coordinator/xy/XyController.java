@@ -35,18 +35,18 @@ import jakarta.ws.rs.core.Response.Status;
 
 @Path("experiments/{expUUID}/outputs/XY/{outputId}")
 @ApplicationScoped
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class XyController {
 
 	@Inject
-	XyService xyService;
+	private XyService xyService;
 
 	@Inject
-	TraceServerManager traceServerManager;
+	private TraceServerManager traceServerManager;
 
 	@POST
 	@Path("xy")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getXy(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
@@ -78,8 +78,6 @@ public class XyController {
 
 	@POST
 	@Path("tree")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTree(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
@@ -113,8 +111,6 @@ public class XyController {
 
 	@GET
 	@Path("tooltip")
-	@Consumes(MediaType.APPLICATION_JSON)
-	@Produces(MediaType.APPLICATION_JSON)
 	public Response getTooltips() {
 		return Response.status(Status.NOT_IMPLEMENTED).build();
 	}
