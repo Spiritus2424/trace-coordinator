@@ -11,8 +11,11 @@ version = "v1.0.0-alpha"
 
 plugins {
     java
-    war
+	application
     `maven-publish`
+}
+application {
+    mainClass.set("org.eclipse.trace.coordinator.Main")
 }
 
 java {
@@ -37,28 +40,29 @@ repositories {
 
 
 dependencies {
-    // Use JUnit Jupiter for testing.
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
     // This dependency is used by the application.
-    providedCompile("jakarta.platform:jakarta.jakartaee-api:10.0.0")
-    
+    implementation("jakarta.platform:jakarta.jakartaee-api:10.0.0")
+    implementation("org.glassfish.jersey.core:jersey-server:3.1.1")
+	
+	implementation("org.glassfish.jersey.containers:jersey-container-grizzly2-http:3.1.1")
+
+	implementation("org.glassfish.jersey.inject:jersey-hk2:3.1.1")
+	annotationProcessor("org.glassfish.hk2:hk2-metadata-generator:3.0.4")
+	
+	// For WALD
+	implementation("org.glassfish.jaxb:jaxb-runtime:4.0.2")
+
     // Tsp Java Client
     implementation("org.eclipse:tsp-java-client-insiders:v2.6.0-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
 
-    // JUnit Jupiter
+    // Use JUnit Jupiter for testing.
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
 
 }
-
-
-tasks.war {
-    archiveBaseName.set("trace-coordinator")
-}
-
 
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
