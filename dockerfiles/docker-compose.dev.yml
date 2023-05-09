@@ -1,12 +1,6 @@
 version: "3.9"
 
 services:
-  trace-coordinator:
-    container_name: Trace-Coordinator
-    image: trace-coordinator
-    ports:
-      - "8080:8080"
-
   trace-server-1:
     container_name: Trace-Server-1
     image: trace-server
@@ -38,6 +32,7 @@ services:
       - ${PWD}/traces/103-compare-package-managers/zypper:/zypper:ro
     ports:
       - "8084:8080"
+
   trace-server-5:
     container_name: Trace-Server-5
     image: trace-server
