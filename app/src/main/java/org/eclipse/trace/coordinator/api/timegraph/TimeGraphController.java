@@ -171,7 +171,10 @@ public class TimeGraphController {
 					return accumulator;
 				});
 
-		genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+		if (genericResponseMerged.getModel() != null) {
+			genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+		}
+
 		return Response.ok(genericResponseMerged).build();
 	}
 

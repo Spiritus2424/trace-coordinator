@@ -98,13 +98,16 @@ public class XyController {
 						if (genericResponse.getModel() != null) {
 							headers.addAll(genericResponse.getModel().getHeaders());
 							accumulator.getModel().getEntries().addAll(genericResponse.getModel().getEntries());
+
 						}
 					}
 
 					return accumulator;
 				});
 
-		genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+		if (genericResponseMerged.getModel() != null) {
+			genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+		}
 		return Response.ok(genericResponseMerged).build();
 	}
 
