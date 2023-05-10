@@ -54,7 +54,7 @@ dependencies {
 	implementation("org.glassfish.jaxb:jaxb-runtime:4.0.2")
 
     // Tsp Java Client
-    implementation("org.eclipse:tsp-java-client-insiders:v2.6.0-alpha")
+    implementation("org.eclipse:tsp-java-client-insiders:v2.6.4-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
