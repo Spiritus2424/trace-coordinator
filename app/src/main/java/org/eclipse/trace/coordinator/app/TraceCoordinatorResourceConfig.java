@@ -1,5 +1,6 @@
 package org.eclipse.trace.coordinator.app;
 
+import org.eclipse.trace.coordinator.app.cors.CorsFilter;
 import org.eclipse.trace.coordinator.shared.utils.AutoScanFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 
@@ -11,6 +12,7 @@ public class TraceCoordinatorResourceConfig extends ResourceConfig {
 	public TraceCoordinatorResourceConfig() {
 		packages("org.eclipse.trace.coordinator.api");
 		register(AutoScanFeature.class);
+		register(CorsFilter.class);
 		property(Configuration.PORT, "8080");
 	}
 
