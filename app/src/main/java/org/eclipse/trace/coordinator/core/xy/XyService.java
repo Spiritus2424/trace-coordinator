@@ -45,8 +45,10 @@ public class XyService {
 		return (!traceServerRequestedItems.isEmpty())
 				? traceServer.getTspClient().getXyApiAsync().getXy(experimentUuid, outputId, newBody)
 						.thenApply(response -> {
-							this.xyAnalysis.computeXy(traceServer, response
-									.getResponseModel().getModel().getSeries());
+							if (response.getResponseModel().getModel() != null) {
+								this.xyAnalysis.computeXy(traceServer, response
+										.getResponseModel().getModel().getSeries());
+							}
 							return response.getResponseModel();
 						})
 				: null;
@@ -59,8 +61,10 @@ public class XyService {
 			final Body<GetXyTreeRequestDto> body) {
 		return traceServer.getTspClient().getXyApiAsync().getXyTree(experimentUuid, outputId, body)
 				.thenApply(response -> {
-					this.xyAnalysis.computeTree(traceServer,
-							response.getResponseModel().getModel().getEntries());
+					if (response.getResponseModel().getModel() != null) {
+						this.xyAnalysis.computeTree(traceServer,
+								response.getResponseModel().getModel().getEntries());
+					}
 					return response.getResponseModel();
 				});
 	}
