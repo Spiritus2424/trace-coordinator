@@ -1,0 +1,6 @@
+[master]
+cloudmain.dorsal.polymtl.ca ansible_user=ubuntu
+
+[workers]
+compute3.dorsal.polymtl.ca  ansible_user=ubuntu
+compute5.dorsal.polymtl.ca  ansible_user=ubuntu
