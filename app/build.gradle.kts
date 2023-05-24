@@ -68,3 +68,8 @@ tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+
+tasks.jar {
+	archiveFileName.set("${project.name}.jar")
+}

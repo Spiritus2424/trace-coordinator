@@ -1,6 +1,15 @@
 version: "3.9"
 
 services:
+  trace-coordinator:
+    container_name: Trace-Coordinator
+    image: trace-coordinator
+    network_mode: "host"
+    volumes:
+      - ${PWD}/.trace-coordinator.yml:/app/bin/.trace-coordinator.yml
+    ports:
+      - "8080:8080"
+
   trace-server-1:
     container_name: Trace-Server-1
     image: trace-server

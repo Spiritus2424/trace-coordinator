@@ -3,93 +3,24 @@
   become: true
   gather_facts: true
   tasks:
-    - name: Install Docker
+    - name: Install Podman
       apt:
-        name: docker.io
+        name: podman
         update_cache: yes
-
-    - name: Add Kubernetes APT Key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
-
-    - name: Add Kubernetes APT Repository
-      apt_repository:
-        repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
-        state: present
-
-    - name: Install Kubernetes Packages
-      apt:
-        name: kubeadm
-        # name: kubelet kubeadm kubectl
-        state: present
-        update_cache: yes
-      environment:
-        DEBIAN_FRONTEND: noninteractive
-  
-    - name: Enable and Start Docker Service
-      service:
-        name: docker
-        state: started
-        enabled: yes
-
-    - name: Enable and Start kubelet Service
-      service:
-        name: kubelet
-        state: started
-        enabled: yes
+    - name: Set Podman registries conf
+      shell: "{{ item }} >> /etc/containers/registries.conf"
+      with_items:
+      - 'echo "[registries.search]"' 
+      - 'echo "registries=[\"docker.io\"]"'
 
 - hosts: master
   become: true
   gather_facts: true
   tasks:
-    - name: Initialize Kubernetes Cluster
-      command: kubeadm init
 
-    - name: create .kube directory
-      file:
-        path: $HOME/.kube
-        state: directory
-        mode: 0755
-
-    - name: copies admin.conf to user's kube config
-      copy:
-        src: /etc/kubernetes/admin.conf
-        dest: $HOME/.kube/config
-        remote_src: yes
-
-    # - name: Copy kubeconfig to User's Home Directory
-    #   command: "{{ item }}"
-    #   with_items:
-    #     # - mkdir -p $HOME/.kube
-    #     # - cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    #     - chown $(id -u):$(id -g) $HOME/.kube/config
-
-    - name: Generate join command
-      command: kubeadm token create --print-join-command
-      register: join_command
-
-    - name: Debug join command
-      debug:
-        var: join_command.stdout
-
-    - name: Save join command to a file
-      copy:
-        content: "{{ join_command.stdout }}"
-        dest: /tmp/kube_join_command.sh
-        mode: '0755'
-
-    - name: Copy file to worker nodes
-      copy:
-        content: "{{ join_command.stdout }}"
-        dest: /tmp/kube_join_command.sh
-        mode: '0711'
-      delegate_to: "{{ item }}"
-      loop: "{{ groups['workers'] }}"
 
 - hosts: workers
   become: true
   gather_facts: true
   tasks:
-    - name: Join worker nodes to the Kubernetes cluster
-      shell: /tmp/kube_join_command.sh
+
