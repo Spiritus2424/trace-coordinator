@@ -1,0 +1,40 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    host_port: 8080
+    container_port: 8080
+    container_registry: docker.io/spiritus2424
+
+- hosts: master
+  gather_facts: true
+  vars:
+    trace_coordinator_config_file_name: .trace-coordinator.yml
+  tasks:
+    - name: Copies .trace-coordinator.yml config file to Master 
+      copy:
+        src: /workspaces/trace-coordinator/benchmarks/{{trace_coordinator_config_file_name}}
+        dest: $HOME/{{trace_coordinator_config_file_name}}
+    - name: Run Trace Coordinator image on Master
+      containers.podman.podman_container:
+        name: trace-coordinator
+        image: "{{container_registry}}/trace-coordinator"
+        state: started
+        detach: true
+        ports:
+          - "{{host_port}}:{{container_port}}"
+        volume:
+          - $HOME/{{trace_coordinator_config_file_name}}:/app/bin/{{trace_coordinator_config_file_name}}
+
+- hosts: workers
+  gather_facts: true
+  tasks:
+    - name: Run Trace Server image on Workers
+      containers.podman.podman_container:
+        name: trace-server
+        image: "{{container_registry}}/trace-server"
+        state: started
+        detach: true
+        ports:
+          - "{{host_port}}:{{container_port}}"

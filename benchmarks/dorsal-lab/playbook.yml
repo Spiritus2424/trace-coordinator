@@ -1,0 +1,9 @@
+---
+- hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Install Podman
+      apt:
+        name: podman
+        update_cache: yes
