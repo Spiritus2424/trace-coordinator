@@ -1,42 +1,22 @@
-FROM alpine:3.16.0 AS packager
+FROM gradle:8.1.1-jdk17-alpine AS packager
 
 ARG USERNAME
 ARG GITHUB_TOKEN
-ENV JAVA_MINIMAL="/opt/java-minimal"
+
 ENV USERNAME=${USERNAME}
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
-
-RUN apk --no-cache add openjdk17-jdk openjdk17-jmods && \
-	# build minimal JRE
-	/usr/lib/jvm/java-17-openjdk/bin/jlink \
-	--verbose \
-	--add-modules \
-	java.base,java.sql,java.naming,java.desktop,java.management,java.security.jgss,java.instrument,jdk.unsupported \
-	--compress 2 --no-header-files --strip-java-debug-attributes --no-man-pages \
-	--output "$JAVA_MINIMAL"
 
 COPY ./ /app/
 
 WORKDIR /app/
 
 RUN ./gradlew build -x test && ./gradlew installDist
+ENV HOST="0.0.0.0"
+ENV PORT="8080"
+FROM eclipse-temurin:17-alpine
 
-# ENTRYPOINT [ "/bin/sh", "-c", "sleep infinity" ]
-# CMD [ "sleep infinity" ]
-
-FROM alpine:3.16.0
-
-ENV JAVA_HOME=/opt/java-minimal
-ENV PATH="$PATH:$JAVA_HOME/bin"
-
-# Required dependency for Eclipse Trace Compass Server
-RUN apk --no-cache add libc6-compat
-
-COPY --from=packager "$JAVA_HOME" "$JAVA_HOME"
 COPY --from=packager /app/app/build/install/trace-coordinator/ /app/
-
 WORKDIR /app/bin
-EXPOSE 8080
 
 CMD ["./trace-coordinator"]
