@@ -1,22 +1,23 @@
 package org.eclipse.trace.coordinator;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.net.URI;
 
 import org.eclipse.trace.coordinator.app.TraceCoordinatorResourceConfig;
-
-import jakarta.ws.rs.SeBootstrap;
-import jakarta.ws.rs.SeBootstrap.Instance;
+import org.glassfish.grizzly.http.server.HttpServer;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 
 public class Main {
 
-	public static void main(String[] args) throws InterruptedException {
-		TraceCoordinatorResourceConfig traceCoordinatorApplication = new TraceCoordinatorResourceConfig();
-		Instance instance = SeBootstrap.start(traceCoordinatorApplication).toCompletableFuture().join();
+	public static void main(String[] args) throws IOException {
+		// Set up the HTTP server
+		String protocol = "http";
+		String host = System.getenv().containsKey("HOST") ? System.getenv("HOST") : "0.0.0.0";
+		String port = System.getenv().containsKey("PORT") ? System.getenv("PORT") : "8080";
+		HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(
+				URI.create(String.format("%s://%s:%s", protocol, host, port)),
+				new TraceCoordinatorResourceConfig());
 
-		Logger.getLogger(Main.class.getName()).log(Level.INFO, "Listening on {0}",
-				instance.configuration().baseUri().toString());
-
-		Thread.currentThread().join();
+		httpServer.start();
 	}
 }
