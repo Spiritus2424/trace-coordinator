@@ -1,0 +1,87 @@
+---
+- hosts: all
+  tasks:
+    - name: Create Tracing Directory
+      file:
+        path: $HOME/tracing
+        state: directory
+
+    - name: Copy hosts File
+      copy:
+        src: /workspaces/trace-coordinator/benchmarks/poly-lab/hosts.mpi
+        dest: $HOME/tracing/hosts
+
+    - name: Register HPC Archive
+      stat:
+        path: "{{hpc_folder_path}}"
+      register: hpc_archive
+
+    - name: Copy Archive
+      unarchive:
+        src: $HOME/hpc2021-1.1.tar.gz
+        dest: /home/tmp/
+        list_files: true
+        remote_src: true
+      when: not hpc_archive.stat.exists
+
+    - name: Copy Example_gnu.cfg config file 
+      copy:
+        src: "{{hpc_folder_path}}/config/Example_gnu.cfg"
+        dest: "{{hpc_folder_path}}/config/benchmark_gnu.cfg"
+        mode: '770'
+        remote_src: true
+
+    - name: Edit benchmark_gnu.cfg Config file - Line "MPIRUN_OPTS"
+      lineinfile:
+          path: "{{hpc_folder_path}}/config/benchmark_gnu.cfg"
+          regexp: "MPIRUN_OPTS = --bind-to none -q" 
+          line: "MPIRUN_OPTS = --hostfile $HOME/tracing/hosts"
+          state: present
+
+    - name: Edit benchmark_gnu.cfg Config file - Line "submit"
+      lineinfile:
+          path: "{{hpc_folder_path}}/config/benchmark_gnu.cfg"
+          regexp: "submit = mpirun" 
+          line: "submit = mpirun ${MPIRUN_OPTS} -np {{ansible_processor_nproc}} $command"
+          state: present
+      
+    - name: Create Lib Directory
+      file:
+        path: /home/tmp/lib
+        state: directory
+
+    - name: Creating a symlink
+      file:
+        src: /usr/lib64/libnsl.so.3
+        dest: /home/tmp/lib/libnsl.so.1
+        state: link
+
+    - name: Add environment variable to .bashrc
+      lineinfile:
+        dest: ~/.bashrc
+        line: 'export LD_LIBRARY_PATH=/home/tmp/lib:$LD_LIBRARY_PATH'
+        insertafter: EOF
+        create: yes
+
+    - name: Install HPC2021
+      shell: echo yes | sh ./install.sh
+      args:
+        chdir: "{{ hpc_folder_path }}"
+
+    - name: Build HPC Benchmark
+      shell: "export PATH=/usr/lib64/mpich/bin/:$PATH && source ./shrc && runhpc --config=benchmark_gnu.cfg --action=build --tune=base --ranks 12 {{item}}"
+      args:
+        chdir: "{{ hpc_folder_path }}"
+      with_items:
+        - 513.soma_t
+
+- hosts: master
+  tasks:
+    - name: Transfer Identity Script
+      copy: 
+        src: /workspaces/trace-coordinator/benchmarks/poly-lab/identity.sh 
+        dest: $HOME/tracing/identity.sh 
+        mode: '777'
+
+    - name: Execute Identity Script
+      command: echo {{ansible_password}} | sh $HOME/tracing/identity.sh

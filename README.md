@@ -1,14 +1,12 @@
-# Trace Compass Coordinator
+# Trace Compass Coordinator <!-- omit from toc -->
 
-## Table of Contents
+## Table of Contents <!-- omit from toc -->
 
-- [Trace Compass Coordinator](#trace-compass-coordinator)
-  - [Table of Contents](#table-of-contents)
-  - [Authenticating to GitHub Packages](#authenticating-to-github-packages)
-  - [Compiling manually](#compiling-manually)
-  - [Running the trace coordinator](#running-the-trace-coordinator)
-  - [Trace Coordinator Configuration File](#trace-coordinator-configuration-file)
-  - [Trace Coordinator Properties](#trace-coordinator-properties)
+- [Authenticating to GitHub Packages](#authenticating-to-github-packages)
+- [Compiling manually](#compiling-manually)
+- [Running the trace coordinator](#running-the-trace-coordinator)
+- [Trace Coordinator Configuration File](#trace-coordinator-configuration-file)
+- [Trace Coordinator Properties](#trace-coordinator-properties)
 
 ## Authenticating to GitHub Packages
 

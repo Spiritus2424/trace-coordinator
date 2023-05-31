@@ -55,7 +55,7 @@ public class TraceServer {
 					String.format("The entry id is too big %d, it should be between [%d,%d[ for server %d", entryId,
 							this.getLowerInterval(), this.getHigherInterval(), this.id));
 		}
-		return entryId + step * this.id;
+		return entryId + this.getLowerInterval();
 	}
 
 	public Integer decodeEntryId(Integer encodeEntryId) throws ArithmeticException {

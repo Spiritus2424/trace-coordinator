@@ -15,5 +15,5 @@ bin
 # Trace Sample Directory
 traces
 
-# Ansible
-hosts
+#benchmark
+hosts*
