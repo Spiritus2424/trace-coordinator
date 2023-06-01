@@ -1,0 +1,37 @@
+---
+- hosts: all
+  vars_prompt:
+    - name: trace_name
+      prompt: Enter a name for the Trace
+      private: false
+  tasks:
+    - name: Transfer Start LTTng Script
+      copy: 
+        src: /workspaces/trace-coordinator/benchmarks/lttng/start.sh 
+        dest: $HOME/tracing/start.sh 
+        mode: '777'
+
+    - name: Transfer Stop LTTng Script
+      copy:
+        src: /workspaces/trace-coordinator/benchmarks/lttng/stop.sh 
+        dest: $HOME/tracing/stop.sh 
+        mode: '777'
+
+    - name: Execute Start LTTng Script
+      command: "sh $HOME/tracing/start.sh {{trace_name}}"
+
+    - name: Wait Before Stop
+      pause:
+        prompt: "Press Enter for ending collecting Trace ..."
+
+    - name: Execute Stop LTTng Script
+      command: sh $HOME/tracing/stop.sh
+
+    - name: Get Hostname
+      shell: hostname -s
+      register: short_hostname
+    - name: Collect LTTng Trace
+      fetch:
+        src: "/home/tmp/tracing/{{trace_name}}/{{short_hostname}}"
+        dest: "/workspaces/trace-coordinator/traces/"
+        
