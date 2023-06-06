@@ -22,7 +22,7 @@ def generate_trace_coordinator_config_file(workers):
 	for worker in workers:
 			trace_servers.append({
 					"host": worker,
-					"port": 8080,
+					"port": 5000,
 					"traces-path": []})
                         
 	config["trace-servers"] = trace_servers
@@ -31,7 +31,7 @@ def generate_trace_coordinator_config_file(workers):
 
 
 # Replace 'hosts_file_path' with the actual path to your Ansible "hosts" file
-hosts_file_path = './benchamrks/hosts'
+hosts_file_path = './benchmarks/dorsal-lab/hosts'
 section_name = 'workers'
 workers = read_ansible_hosts(hosts_file_path, section_name)
 

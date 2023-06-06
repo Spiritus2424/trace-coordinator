@@ -32,7 +32,7 @@ repositories {
         name = "GitHubPackages"
         url = uri("https://maven.pkg.github.com/spiritus2424/tsp-java-client")
         credentials {
-            username = System.getenv("USERNAME")
+            username = System.getenv("GITHUB_USER")
             password = System.getenv("GITHUB_TOKEN")
         }
     }

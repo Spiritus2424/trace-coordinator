@@ -1,12 +1,4 @@
 ---
-- hosts: all
-  become: true
-  gather_facts: true
-  vars:
-    host_port: 8080
-    container_port: 8080
-    container_registry: docker.io/spiritus2424
-
 - hosts: master
   gather_facts: true
   vars:
@@ -16,25 +8,29 @@
       copy:
         src: /workspaces/trace-coordinator/benchmarks/{{trace_coordinator_config_file_name}}
         dest: $HOME/{{trace_coordinator_config_file_name}}
+    
+    - name: Stop Instance Trace Coordinator image on Master
+      shell: "apptainer instance stop trace-coordinator"
+      ignore_errors: true
+
+    - name: Start Instance Trace Coordinator image on Master
+      shell: "apptainer instance start --mount 'type=bind,source=/usagers1/{{ansible_user}}/{{trace_coordinator_config_file_name}},destination=/app/bin/{{trace_coordinator_config_file_name}}' docker://spiritus2424/trace-coordinator trace-coordinator"
+    
+    # Could be remove if we have startscript in docker/apptainer: https://apptainer.org/docs/user/main/docker_and_oci.html#compat-flag
     - name: Run Trace Coordinator image on Master
-      containers.podman.podman_container:
-        name: trace-coordinator
-        image: "{{container_registry}}/trace-coordinator"
-        state: started
-        detach: true
-        ports:
-          - "{{host_port}}:{{container_port}}"
-        volume:
-          - $HOME/{{trace_coordinator_config_file_name}}:/app/bin/{{trace_coordinator_config_file_name}}
+      shell: "nohup apptainer run --env PORT=5000 instance://trace-coordinator /app/bin/trace-coordinator </dev/null >/dev/null 2>&1 &"
 
 - hosts: workers
   gather_facts: true
   tasks:
-    - name: Run Trace Server image on Workers
-      containers.podman.podman_container:
-        name: trace-server
-        image: "{{container_registry}}/trace-server"
-        state: started
-        detach: true
-        ports:
-          - "{{host_port}}:{{container_port}}"
+    - name: Stop Instance Trace Server image on Worker
+      shell: "apptainer instance stop  tracecompass-server"
+      ignore_errors: true
+
+    - name: Start Instance Trace Server image on Worker
+      shell: "apptainer instance start --writable-tmpfs docker://spiritus2424/trace-server tracecompass-server /usr/src/tracecompass/tracecompass-server"
+    
+    # Could be remove if we have startscript in docker/apptainer: https://apptainer.org/docs/user/main/docker_and_oci.html#compat-flag
+    - name: Run Trace Server image on Worker
+      shell: "nohup apptainer run --env TRACESERVER_PORT=5000 instance://tracecompass-server /usr/src/tracecompass/tracecompass-server </dev/null >/dev/null 2>&1 &"
+

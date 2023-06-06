@@ -14,8 +14,8 @@ This project use a package from `Github Packages`. You have to get authenticate 
 
 Then you will have to store your Github `Username` and `Token` into environment variables.
 
-    export USERNAME=<YOUR_USERNAME>
-    export GITHUB_TOKEN=<YOUR_GIT_TOKEN>
+    export GITHUB_USER=<YOUR_GITHUB_USER>
+    export GITHUB_TOKEN=<YOUR_GITHUB_TOKEN>
 
 [personal-access-token]: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 

@@ -1,9 +1,9 @@
 FROM gradle:8.1.1-jdk17-alpine AS packager
 
-ARG USERNAME
+ARG GITHUB_USER
 ARG GITHUB_TOKEN
 
-ENV USERNAME=${USERNAME}
+ENV GITHUB_USER=${GITHUB_USER}
 ENV GITHUB_TOKEN=${GITHUB_TOKEN}
 
 
@@ -12,9 +12,10 @@ COPY ./ /app/
 WORKDIR /app/
 
 RUN ./gradlew build -x test && ./gradlew installDist
+
+FROM eclipse-temurin:17-alpine
 ENV HOST="0.0.0.0"
 ENV PORT="8080"
-FROM eclipse-temurin:17-alpine
 
 COPY --from=packager /app/app/build/install/trace-coordinator/ /app/
 WORKDIR /app/bin

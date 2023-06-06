@@ -12,8 +12,11 @@ bin
 # Trace Coordinator Configuration
 .trace-coordinator.yml
 
+# Benchmarks
+benchmarks
 
 # Trace Sample Directory
 traces
 
-dockerfiles/.env
+# Dockerfiles
+# dockerfiles
