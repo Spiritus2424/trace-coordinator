@@ -19,7 +19,7 @@ scp $HOME/ws/hpc2021-1.1.tar.gz USER@DEST_HOST:/home/tmp/
 ```
 
 > The following command are made inside the `$HOME/ws/trace-coordinator/benchmarks` folder on our computer.
->
+
 Create the inventory file
 
 ```shell
@@ -64,10 +64,24 @@ ten.example.com
 ...
 ```
 
-Run Ansible
+Run Ansible to Setup Polytechnique Labs
 
 ```shell
 ansible-playbook -i poly-lab/inventory/hosts poly-lab/playbook.yml
+```
+
+Start Lttng
+
+```shell
+ansible-playbook -i poly-lab/inventory/hosts lttng/playbook.yml
+```
+
+In a new terminal start the MPI program on the master node.
+
+> The following command are made inside the `/home/tmp/hpc2021-1.1.7` folder on the remote master node.
+
+```shell
+time MPICH_PORT_RANGE=5000:5050 mpirun --hostfile $HOME/tracing/hosts -np 120 ./benchspec/HPC/513.soma_t/exe/soma_base.gnu_mpi -r 42 -t 200 --npoly=140000 --gen-state-file
 ```
 <!-- 
 #### Your computer
