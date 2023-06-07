@@ -16,4 +16,5 @@ bin
 traces
 
 #benchmark
-hosts*
+inventory
+hosts

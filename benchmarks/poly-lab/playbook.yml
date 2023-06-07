@@ -8,21 +8,21 @@
 
     - name: Copy hosts File
       copy:
-        src: /workspaces/trace-coordinator/benchmarks/poly-lab/hosts.mpi
+        src: hosts
         dest: $HOME/tracing/hosts
 
     - name: Register HPC Archive
-      stat:
+      find:
         path: "{{hpc_folder_path}}"
-      register: hpc_archive
+      register: hpc_files_found
 
-    - name: Copy Archive
+    - name: Unarchive hpc2021-1.1.tar.gz
       unarchive:
         src: $HOME/hpc2021-1.1.tar.gz
         dest: /home/tmp/
         list_files: true
         remote_src: true
-      when: not hpc_archive.stat.exists
+      when: hpc_files_found.matched == 0
 
     - name: Copy Example_gnu.cfg config file 
       copy:
@@ -79,7 +79,7 @@
   tasks:
     - name: Transfer Identity Script
       copy: 
-        src: /workspaces/trace-coordinator/benchmarks/poly-lab/identity.sh 
+        src: identity.sh 
         dest: $HOME/tracing/identity.sh 
         mode: '777'
 
