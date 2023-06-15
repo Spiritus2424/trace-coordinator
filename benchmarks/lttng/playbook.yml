@@ -33,6 +33,6 @@
 
     - name: Collect LTTng Trace
       fetch:
-        src: "/home/tmp/tracing/{{trace_name}}-{{short_hostname}}"
+        src: "/home/tmp/tracing/{{trace_name}}-{{short_hostname.stdout}}"
         dest: "/workspaces/trace-coordinator/traces/"
       ignore_errors: true
