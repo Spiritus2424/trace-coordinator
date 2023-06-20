@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.tsp.java.client.api.trace.Trace;
 import org.eclipse.tsp.java.client.api.trace.dto.OpenTraceRequestDto;
+import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.jvnet.hk2.annotations.Service;
 
@@ -36,8 +37,14 @@ public class TraceService {
 		});
 	}
 
+	public CompletableFuture<List<Trace>> openTraces(final TraceServer traceServer,
+			final Body<OpenTraceRequestDto> body) {
+		return traceServer.getTspClient().getTraceApiAsync().openTraces(body)
+				.thenApply(TspClientResponse::getResponseModel);
+	}
+
 	public CompletableFuture<Trace> deleteTrace(final TraceServer traceServer, final UUID traceUuid) {
 		return traceServer.getTspClient().getTraceApiAsync().deleteTrace(traceUuid, Optional.empty(), Optional.empty())
-				.thenApply(response -> response.getResponseModel());
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 }

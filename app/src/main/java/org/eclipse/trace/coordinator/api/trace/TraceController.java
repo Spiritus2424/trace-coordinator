@@ -96,8 +96,9 @@ public class TraceController {
 					}
 
 					OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(body.getParameters().getUri(),
-							String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")), null);
-					return this.traceService.openTrace(traceServer, new Body<>(openTraceRequestDto));
+							String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")), null,
+							body.getParameters().isRecursively());
+					return this.traceService.openTraces(traceServer, new Body<>(openTraceRequestDto));
 				})
 				.map(CompletableFuture::join)
 				.flatMap(List::stream)
