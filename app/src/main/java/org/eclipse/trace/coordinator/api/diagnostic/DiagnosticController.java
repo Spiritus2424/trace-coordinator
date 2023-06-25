@@ -34,9 +34,9 @@ public class DiagnosticController {
 				.stream()
 				.map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
 				.map(CompletableFuture::join)
-				.anyMatch(health -> health.getStatus() == HealthStatus.DOWN)
-						? new Health(HealthStatus.DOWN)
-						: new Health(HealthStatus.UP);
+				.allMatch(health -> health.getStatus() == HealthStatus.UP)
+						? new Health(HealthStatus.UP)
+						: new Health(HealthStatus.DOWN);
 
 		return Response.ok(healthMerged).build();
 	}
