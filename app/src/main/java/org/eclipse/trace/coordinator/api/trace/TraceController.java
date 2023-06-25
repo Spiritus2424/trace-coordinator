@@ -85,20 +85,20 @@ public class TraceController {
 	public Response openTrace(@NotNull @Valid final Body<OpenTraceRequestDto> body) {
 		final List<Trace> traces = this.traceServerManager.getTraceServers().stream()
 				.map((TraceServer traceServer) -> {
-					/**
-					 * Fix Trace Server: The trace server should put a name by default if it is not
-					 * provide
-					 */
 					String traceName = body.getParameters().getName();
-					if (traceName == null) {
-						final String[] uriSplit = body.getParameters().getUri().split("/");
-						traceName = uriSplit[uriSplit.length - 1];
+					if (body.getParameters().getMaxDepth() == 0) {
+						if (traceName == null) {
+							final String[] uriSplit = body.getParameters().getUri().split("/");
+							traceName = uriSplit[uriSplit.length - 1];
+						}
+						traceName = String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\"));
+					} else {
+						traceName = String.format("%s$%s", traceServer.getHost(), body.getParameters().getName());
 					}
 
-					OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(body.getParameters().getUri(),
-							String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\")), null,
-							body.getParameters().isRecursively());
-					return this.traceService.openTraces(traceServer, new Body<>(openTraceRequestDto));
+					body.getParameters()
+							.setName(traceName);
+					return this.traceService.openTraces(traceServer, body);
 				})
 				.map(CompletableFuture::join)
 				.flatMap(List::stream)
