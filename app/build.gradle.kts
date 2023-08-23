@@ -52,15 +52,25 @@ dependencies {
 	
 	// For WALD
 	implementation("org.glassfish.jaxb:jaxb-runtime:4.0.2")
+	
+	// This dependency is used internally, and not exposed to consumers on their own compile classpath.
+    implementation("com.google.guava:guava:31.0.1-jre")
 
     // Tsp Java Client
-    implementation("org.eclipse:tsp-java-client-insiders:v2.6.8-alpha")
+    implementation("org.eclipse:tsp-java-client-insiders:v2.6.13-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
 
     // Use JUnit Jupiter for testing.
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.2")
+
+	// Lombok - Decorator
+    compileOnly("org.projectlombok:lombok:1.18.26")
+	annotationProcessor("org.projectlombok:lombok:1.18.26")
+	testCompileOnly("org.projectlombok:lombok:1.18.26")
+	testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
+
 
 }
 

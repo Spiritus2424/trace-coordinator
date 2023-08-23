@@ -17,8 +17,9 @@ public class ExperimentFactory {
 						distributedExperiment = experiment;
 					} else {
 
-						distributedExperiment.setStart(distributedExperiment.getStart().min(experiment.getStart()));
-						distributedExperiment.setEnd(distributedExperiment.getEnd().max(experiment.getEnd()));
+						distributedExperiment
+								.setStart(Math.min(distributedExperiment.getStart(), experiment.getStart()));
+						distributedExperiment.setEnd(Math.max(distributedExperiment.getEnd(), experiment.getEnd()));
 						distributedExperiment
 								.setNbEvents(distributedExperiment.getNbEvents() + experiment.getNbEvents());
 						distributedExperiment.getTraces().addAll(experiment.getTraces());

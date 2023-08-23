@@ -32,7 +32,7 @@ public class XyService {
 			final String outputId,
 			final Body<GetXyModelRequestDto> body) {
 
-		final List<Integer> traceServerRequestedItems = List.copyOf(body.getParameters().getRequestedItems()).stream()
+		final List<Long> traceServerRequestedItems = List.copyOf(body.getParameters().getRequestedItems()).stream()
 				.filter(traceServer::isValidEncodeEntryId)
 				.map(traceServer::decodeEntryId)
 				.collect(Collectors.toList());

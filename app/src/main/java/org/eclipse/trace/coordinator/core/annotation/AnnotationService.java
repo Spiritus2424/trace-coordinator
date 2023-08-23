@@ -34,7 +34,7 @@ public class AnnotationService {
 						body.getParameters().getRequestedMarkerCategories()));
 		if (body.getParameters().getRequestedItems() != null) {
 			newBody.getParameters().setRequestedItems(List.copyOf(body.getParameters().getRequestedItems()).stream()
-					.filter((Integer number) -> traceServer.isValidEncodeEntryId(number))
+					.filter((Long items) -> traceServer.isValidEncodeEntryId(items))
 					.map(traceServer::decodeEntryId)
 					.collect(Collectors.toList()));
 		}
