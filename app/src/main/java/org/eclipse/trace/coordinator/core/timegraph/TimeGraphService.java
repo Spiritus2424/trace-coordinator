@@ -14,6 +14,7 @@ import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphArrowsRequestDt
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphStatesRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTooltipsRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTreeRequestDto;
+import org.eclipse.tsp.java.client.core.action.ActionDescriptor;
 import org.eclipse.tsp.java.client.core.tspclient.TspClientResponse;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
 import org.eclipse.tsp.java.client.shared.query.Body;
@@ -105,6 +106,39 @@ public class TimeGraphService {
 					}
 					return response.getResponseModel();
 				});
+	}
+
+	public CompletableFuture<GenericResponse<List<ActionDescriptor>>> getActionTooltips(
+			final TraceServer traceServer,
+			final UUID experimentUuid,
+			final String outputId,
+			final Body<GetTimeGraphTooltipsRequestDto> body) {
+		final Body<GetTimeGraphTooltipsRequestDto> newBody = new Body<>(
+				new GetTimeGraphTooltipsRequestDto(
+						body.getParameters().getRequestedElement(),
+						body.getParameters().getRequestedTimes(),
+						body.getParameters().getRequestedItems()
+								.stream()
+								.filter(traceServer::isValidEncodeEntryId)
+								.map(traceServer::decodeEntryId)
+								.collect(Collectors.toList())));
+
+		return (!newBody.getParameters().getRequestedItems().isEmpty())
+				? traceServer.getTspClient().getTimeGraphApiAsync()
+						.getTimeGraphActionTooltips(experimentUuid, outputId, newBody)
+						.thenApply(TspClientResponse::getResponseModel)
+				: null;
+	}
+
+	public CompletableFuture<Void> applyActionTooltip(
+			final TraceServer traceServer,
+			final UUID experimentUuid,
+			final String outputId,
+			final String actionId,
+			final Body<Map<String, Object>> body) {
+		return traceServer.getTspClient().getTimeGraphApiAsync()
+				.applyTimeGraphActionTooltip(experimentUuid, outputId, actionId, body)
+				.thenApply(TspClientResponse::getResponseModel);
 	}
 
 	public GenericResponse<TimeGraphModel> getNavigations(

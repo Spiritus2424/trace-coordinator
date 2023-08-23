@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.trace.coordinator.core.action.ActionManager;
 import org.eclipse.trace.coordinator.core.timegraph.TimeGraphService;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
@@ -19,6 +20,7 @@ import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphArrowsRequestDt
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphStatesRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTooltipsRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTreeRequestDto;
+import org.eclipse.tsp.java.client.core.action.ActionDescriptor;
 import org.eclipse.tsp.java.client.shared.entry.EntryHeader;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
 import org.eclipse.tsp.java.client.shared.query.Body;
@@ -48,6 +50,9 @@ public class TimeGraphController {
 
 	@Inject
 	private TraceServerManager traceServerManager;
+
+	@Inject
+	private ActionManager actionManager;
 
 	@POST
 	@Path("arrows")
@@ -185,5 +190,56 @@ public class TimeGraphController {
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Query query) {
 		return Response.status(Status.NOT_IMPLEMENTED).build();
+	}
+
+	@POST
+	@Path("tooltip/actions")
+	public Response getActionTooltips(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@NotNull @Valid final Body<GetTimeGraphTooltipsRequestDto> body) {
+		final GenericResponse<List<ActionDescriptor>> genericResponseMerged = this.traceServerManager.getTraceServers()
+				.stream()
+				.map((TraceServer traceServer) -> this.timeGraphService.getActionTooltips(traceServer, experimentUuid,
+						outputId,
+						body))
+				.filter(Objects::nonNull)
+				.map(CompletableFuture::join)
+				.reduce(null, (accumulator, genericResponse) -> {
+					if (accumulator == null) {
+						accumulator = genericResponse;
+					} else {
+						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+							accumulator.setStatus(genericResponse.getStatus());
+							accumulator.setMessage(genericResponse.getMessage());
+						}
+						if (genericResponse.getModel() != null) {
+							accumulator.getModel().addAll(genericResponse.getModel());
+						}
+					}
+
+					return accumulator;
+				});
+
+		return Response.ok(genericResponseMerged).build();
+	}
+
+	@POST
+	@Path("tooltip/actions/{actionId}")
+	public Response applyActionTooltips(
+			@NotNull @PathParam("expUUID") final UUID experimentUuid,
+			@NotNull @PathParam("outputId") final String outputId,
+			@NotNull @PathParam("actionId") final String actionId,
+			@NotNull @Valid final Body<Map<String, Object>> body) {
+		this.traceServerManager.getTraceServers()
+				.stream()
+				.forEach((TraceServer traceServer) -> {
+					this.timeGraphService.applyActionTooltip(traceServer,
+							experimentUuid,
+							outputId,
+							actionId,
+							body);
+				});
+		return Response.ok().build();
 	}
 }
