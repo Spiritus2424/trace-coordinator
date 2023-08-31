@@ -1,17 +1,23 @@
 package org.eclipse.trace.coordinator.api.trace;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.eclipse.trace.coordinator.core.configuration.ConfigurationProvider;
 import org.eclipse.trace.coordinator.core.trace.TraceService;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.trace.Trace;
 import org.eclipse.tsp.java.client.api.trace.dto.OpenTraceRequestDto;
 import org.eclipse.tsp.java.client.shared.query.Body;
+import org.glassfish.hk2.api.Immediate;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -31,8 +37,12 @@ import jakarta.ws.rs.core.Response.Status;
 @Path("traces")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Immediate
 public class TraceController {
 	private static final String NO_SUCH_TRACE = "No Such Trace";
+
+	@Inject
+	private ConfigurationProvider configurationProvider;
 
 	@Inject
 	private TraceService traceService;
@@ -41,15 +51,31 @@ public class TraceController {
 	private TraceServerManager traceServerManager;
 
 	@PostConstruct
-	public void openTraces() {
+	public void loadTraces() {
+		Logger.getLogger(TraceController.class.getName()).log(Level.INFO, "PostContruct Lauch");
+		final List<CompletableFuture<Void>> futureList = new ArrayList<>();
+		final String scheme = "(.*)";
 		for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
-			for (String tracePath : traceServer.getTracesPath()) {
-				String[] uri = tracePath.split("/");
+			List<String> tracesPath = this.configurationProvider.getConfiguration().getTraceServerProperties().stream()
+					.filter(properties -> properties.getHost().matches(scheme.concat(traceServer.getHost()))
+							&& properties.getPort().matches(traceServer.getPort()))
+					.findFirst().get()
+					.getTracesPath();
+			for (String tracePath : tracesPath) {
 				OpenTraceRequestDto openTraceRequestDto = new OpenTraceRequestDto(tracePath);
-				openTraceRequestDto.setName(String.format("%s$%s", traceServer.getHost(), uri[uri.length - 1]));
-				this.traceService.openTrace(traceServer, new Body<>(openTraceRequestDto));
+				openTraceRequestDto.setMaxDepth(3);
+				openTraceRequestDto.setName(traceServer.getHost().concat("$"));
+
+				futureList.add(
+						this.traceService.openTraces(traceServer, new Body<>(openTraceRequestDto))
+								.thenAccept(traces -> {
+									traceServer.getTraces().addAll(traces);
+								}));
 			}
 		}
+
+		CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()])).join();
+
 	}
 
 	@GET
@@ -119,6 +145,7 @@ public class TraceController {
 	public Response deleteTrace(@NotNull @PathParam("uuid") final UUID traceUuid) {
 		final Optional<Trace> trace = this.traceServerManager.getTraceServers().stream()
 				.map((TraceServer traceServer) -> this.traceService.deleteTrace(traceServer, traceUuid))
+				.filter(Objects::nonNull)
 				.map(CompletableFuture::join)
 				.findFirst();
 
