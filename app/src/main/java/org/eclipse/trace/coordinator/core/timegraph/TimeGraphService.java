@@ -23,6 +23,7 @@ import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.jvnet.hk2.annotations.Service;
 
 import jakarta.inject.Inject;
+import jakarta.ws.rs.ClientErrorException;
 
 @Service
 public class TimeGraphService {
@@ -49,26 +50,28 @@ public class TimeGraphService {
 			final UUID experimentUuid,
 			final String outputId,
 			final Body<GetTimeGraphStatesRequestDto> body) {
-		final Body<GetTimeGraphStatesRequestDto> newBody = new Body<>(
-				new GetTimeGraphStatesRequestDto(
+
+		Body<GetTimeGraphStatesRequestDto> newBody = body.getParameters().getRequestedItems().isEmpty() ? body
+				: new Body<>(new GetTimeGraphStatesRequestDto(
 						body.getParameters().getRequestedTimerange(),
-						body.getParameters().getRequestedItems()
-								.stream()
+						body.getParameters().getRequestedItems().stream()
 								.filter(traceServer::isValidEncodeEntryId)
 								.map(traceServer::decodeEntryId)
 								.collect(Collectors.toList())));
 
-		return (!newBody.getParameters().getRequestedItems().isEmpty())
-				? traceServer.getTspClient().getTimeGraphApiAsync()
-						.getTimeGraphStates(experimentUuid, outputId, newBody)
-						.thenApply(response -> {
-							if (response.getResponseModel().getModel() != null) {
-								this.timeGraphAnalysis.computeStates(traceServer,
-										response.getResponseModel().getModel().getRows());
-							}
-							return response.getResponseModel();
-						})
-				: null;
+		return (body.getParameters().getRequestedItems().isEmpty()
+				|| !newBody.getParameters().getRequestedItems().isEmpty())
+						? traceServer.getTspClient().getTimeGraphApiAsync()
+								.getTimeGraphStates(experimentUuid, outputId, newBody)
+								.thenApply(response -> {
+									if (response.getResponseModel().getModel() != null) {
+										this.timeGraphAnalysis.computeStates(traceServer,
+												response.getResponseModel().getModel().getRows());
+									}
+									return response.getResponseModel();
+								})
+						: null;
+
 	}
 
 	public CompletableFuture<GenericResponse<Map<String, String>>> getTooltips(
@@ -138,7 +141,13 @@ public class TimeGraphService {
 			final Body<Map<String, Object>> body) {
 		return traceServer.getTspClient().getTimeGraphApiAsync()
 				.applyTimeGraphActionTooltip(experimentUuid, outputId, actionId, body)
-				.thenApply(TspClientResponse::getResponseModel);
+				.thenApply(response -> {
+					if (!response.isOk()) {
+						throw new ClientErrorException(response.getStatusMessage(),
+								response.getStatusCode().getStatusCode());
+					}
+					return response.getResponseModel();
+				});
 	}
 
 	public GenericResponse<TimeGraphModel> getNavigations(
