@@ -2,14 +2,21 @@ package org.eclipse.trace.coordinator.api.experiment;
 
 import static java.util.stream.Collectors.groupingBy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.eclipse.trace.coordinator.api.trace.TraceController;
+import org.eclipse.trace.coordinator.core.configuration.ConfigurationProvider;
 import org.eclipse.trace.coordinator.core.experiment.ExperimentFactory;
 import org.eclipse.trace.coordinator.core.experiment.ExperimentService;
+import org.eclipse.trace.coordinator.core.experiment.properties.ExperimentProperties;
 import org.eclipse.trace.coordinator.core.trace.TraceService;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
@@ -42,10 +49,10 @@ import jakarta.ws.rs.core.Response.Status;
 public class ExperimentController {
 
 	@Inject
-	private ExperimentService experimentService;
+	private ConfigurationProvider configurationProvider;
 
-	// @Inject
-	// DistributedExperimentManager distributedExperimentManager;
+	@Inject
+	private ExperimentService experimentService;
 
 	@Inject
 	private TraceServerManager traceServerManager;
@@ -54,20 +61,27 @@ public class ExperimentController {
 	private TraceService traceService;
 
 	@PostConstruct
-	public void createExperiments() {
+	private void loadExperiments() {
+		Logger.getLogger(TraceController.class.getName()).log(Level.INFO, "PostContruct Lauch");
+		final List<CompletableFuture<Experiment>> futureList = new ArrayList<>();
+		for (ExperimentProperties experimentProperties : this.configurationProvider.getConfiguration()
+				.getExperimentProperties()) {
+			for (TraceServer traceServer : traceServerManager.getTraceServers()) {
+				List<UUID> traceUuids = traceServer.getTraces().stream()
+						.filter(trace -> {
+							return experimentProperties.getTracesPath().stream()
+									.anyMatch(tracePathRegex -> Pattern.compile(tracePathRegex).matcher(trace.getPath())
+											.find());
+						})
+						.map(trace -> trace.getUuid())
+						.collect(Collectors.toList());
 
-		// for (DistributedExperiment distributedExperiment :
-		// distributedExperimentManager.getDistributedExperiments()
-		// .values()) {
-		// for (TraceServer traceServer : traceServerManager.getTraceServers()) {
-		// Map<String, Object> parameters = new HashMap<>();
-		// parameters.put("name", traceServer.getHost());
-		// parameters.put("traces", distributedExperiment.getTracesUuid());
-		// experimentService.createExperiment(traceServer, new Query(parameters));
-		// }
+				futureList.add(this.experimentService.createExperiment(traceServer,
+						new Body<>(new CreateExperimentRequestDto(experimentProperties.getName(), traceUuids))));
+			}
 
-		// }
-
+			CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()])).join();
+		}
 	}
 
 	@GET
