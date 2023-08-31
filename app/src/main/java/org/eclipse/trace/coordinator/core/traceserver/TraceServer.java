@@ -1,63 +1,42 @@
 package org.eclipse.trace.coordinator.core.traceserver;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.eclipse.tsp.java.client.api.trace.Trace;
 import org.eclipse.tsp.java.client.core.tspclient.TspClient;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+import lombok.Getter;
+
 public class TraceServer {
 	private static int numberOfTraceServer = 0;
-
+	@Getter
 	private final int id;
+	@Getter
 	private URI uri;
+	@Getter
 	private String port;
-	private List<String> tracesPath;
+	@Getter
+	private List<Trace> traces;
+	@Getter
 	private TspClient tspClient;
 
-	public TraceServer(String host, String port, List<String> tracesPath) {
+	public TraceServer(String host, String port, List<Trace> traces) {
+		this.id = TraceServer.numberOfTraceServer++;
 		this.uri = URI.create(String.format("%s:%s", host, port));
 		this.port = port;
-		this.tracesPath = tracesPath;
-
-		ThreadFactory threadFactory = new ThreadFactoryBuilder()
-				.setNameFormat(this.getHost().concat("-thread %d"))
-				.setDaemon(false)
-				.build();
-
-		int threadPoolSize = System.getenv().containsKey("POOL_SIZE") ? Integer.parseInt(System.getenv("POOL_SIZE"))
-				: 2;
-
-		this.tspClient = new TspClient(this.uri.toString(),
-				Executors.newFixedThreadPool(threadPoolSize, threadFactory));
-		this.id = TraceServer.numberOfTraceServer++;
-	}
-
-	public int getId() {
-		return this.id;
-	}
-
-	public URI getUri() {
-		return this.uri;
+		this.traces = traces == null ? new ArrayList<>() : traces;
+		this.tspClient = new TspClient(this.uri.toString(), this.createExecutorService());
 	}
 
 	public String getHost() {
 		return this.uri.getHost();
-	}
-
-	public String getPort() {
-		return this.port;
-	}
-
-	public List<String> getTracesPath() {
-		return this.tracesPath;
-	}
-
-	public TspClient getTspClient() {
-		return tspClient;
 	}
 
 	public Long encodeEntryId(Long entryId) throws ArithmeticException {
@@ -91,6 +70,18 @@ public class TraceServer {
 	private Long getHigherInterval() {
 		final Long step = (Long.MAX_VALUE / TraceServer.numberOfTraceServer);
 		return (step * (this.id + 1));
+	}
+
+	private ExecutorService createExecutorService() {
+		ThreadFactory threadFactory = new ThreadFactoryBuilder()
+				.setNameFormat(this.getHost().concat("-thread %d"))
+				.setDaemon(false)
+				.build();
+
+		int threadPoolSize = System.getenv().containsKey("POOL_SIZE") ? Integer.parseInt(System.getenv("POOL_SIZE"))
+				: 2;
+
+		return Executors.newFixedThreadPool(threadPoolSize, threadFactory);
 	}
 
 }

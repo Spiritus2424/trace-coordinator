@@ -1,5 +1,6 @@
 package org.eclipse.trace.coordinator.core.traceserver.properties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
@@ -44,7 +45,7 @@ public class TraceServerProperties implements Properties<TraceServer> {
 	}
 
 	public TraceServer toObject() {
-		return new TraceServer(this.host, this.port, this.tracesPath);
+		return new TraceServer(this.host, this.port, new ArrayList<>());
 	}
 
 }
