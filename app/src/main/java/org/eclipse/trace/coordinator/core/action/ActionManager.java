@@ -1,11 +1,11 @@
 package org.eclipse.trace.coordinator.core.action;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.UUID;
 
-import org.eclipse.tsp.java.client.core.action.ActionDescriptor;
 import org.jvnet.hk2.annotations.Service;
+
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 import lombok.Getter;
 
@@ -13,10 +13,10 @@ import lombok.Getter;
 public class ActionManager {
 
 	@Getter
-	private Map<String, List<ActionDescriptor>> actionApplied;
+	private Multimap<UUID, IAction<? extends Object>> actionApplied;
 
 	public ActionManager() {
-		this.actionApplied = new HashMap<>();
+		this.actionApplied = ArrayListMultimap.create();
 	}
 
 }

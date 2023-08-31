@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.core.action.ActionManager;
+import org.eclipse.trace.coordinator.core.timegraph.CriticalPathAction;
 import org.eclipse.trace.coordinator.core.timegraph.TimeGraphService;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
@@ -238,7 +239,12 @@ public class TimeGraphController {
 							experimentUuid,
 							outputId,
 							actionId,
-							body);
+							body).whenComplete((Void, exception) -> {
+								if (exception == null) {
+									this.actionManager.getActionApplied().put(experimentUuid,
+											new CriticalPathAction(traceServer, experimentUuid));
+								}
+							});
 				});
 		return Response.ok().build();
 	}
