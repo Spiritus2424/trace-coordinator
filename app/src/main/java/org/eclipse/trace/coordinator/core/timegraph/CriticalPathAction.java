@@ -101,10 +101,15 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 		/*
 		 * Find the Workers on each TraceServer needed to complete the criticalPath
 		 */
-		Map<TimeGraphState, Multimap<TraceServer, Worker>> traceServerWorkers = this.findTraceServerWorkers(cluster,
-				matchedIndexes);
+		Map<TimeGraphState, Multimap<TraceServer, Worker>> traceServerWorkersForEachStates = new HashMap<>();
+		for (TimeGraphState timeGraphState : matchedVertexesForEachStates.keySet()) {
+			Multimap<TraceServer, Worker> matchedVertexes = traceServerWorkersForEachStates
+					.computeIfAbsent(timeGraphState, __ -> ArrayListMultimap.create());
+			matchedVertexes
+					.putAll(this.findTraceServerWorkers(cluster, matchedVertexesForEachStates.get(timeGraphState)));
+		}
 
-		System.out.println(traceServerWorkers);
+		System.out.println(traceServerWorkersForEachStates);
 
 	}
 
@@ -156,19 +161,18 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 		return matchedVertexes;
 	}
 
-	private Map<TimeGraphState, Multimap<TraceServer, Worker>> findTraceServerWorkers(List<TraceServer> cluster,
-			Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedIndexes) {
-		Map<TimeGraphState, Multimap<TraceServer, Worker>> traceServerWorkers = new HashMap<>();
-		for (TimeGraphState networkState : matchedIndexes.keySet()) {
-			cluster.forEach(traceServer -> {
-				List<Worker> workers = matchedIndexes.get(networkState).get(traceServer).stream()
-						.map(vertex -> this.graphService.getWorker(traceServer, experimentUuid, vertex.getWorkerId()))
-						.map(CompletableFuture::join)
-						.distinct() // Remove duplicate Worker Id for the same TraceServer
-						.collect(Collectors.toList());
-				traceServerWorkers.get(networkState).get(traceServer).addAll(workers);
-			});
-		}
+	private Multimap<TraceServer, Worker> findTraceServerWorkers(List<TraceServer> cluster,
+			Multimap<TraceServer, Vertex> matchedVertexes) {
+		Multimap<TraceServer, Worker> traceServerWorkers = ArrayListMultimap.create();
+
+		cluster.forEach(traceServer -> {
+			List<Worker> workers = matchedVertexes.get(traceServer).stream()
+					.map(vertex -> this.graphService.getWorker(traceServer, experimentUuid, vertex.getWorkerId()))
+					.map(CompletableFuture::join)
+					.distinct() // Remove duplicate Worker Id for the same TraceServer
+					.collect(Collectors.toList());
+			traceServerWorkers.get(traceServer).addAll(workers);
+		});
 
 		return traceServerWorkers;
 	}
