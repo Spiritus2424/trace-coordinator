@@ -38,7 +38,8 @@ public class TimeGraphService {
 		return traceServer.getTspClient().getTimeGraphApiAsync()
 				.getTimeGraphArrows(experimentUuid, outputId, body)
 				.thenApply(response -> {
-					if (response.getResponseModel().getModel() != null) {
+					if (response.getResponseModel() != null
+							&& response.getResponseModel().getModel() != null) {
 						this.timeGraphAnalysis.computeArrows(traceServer, response.getResponseModel().getModel());
 					}
 					return response.getResponseModel();
@@ -64,7 +65,8 @@ public class TimeGraphService {
 						? traceServer.getTspClient().getTimeGraphApiAsync()
 								.getTimeGraphStates(experimentUuid, outputId, newBody)
 								.thenApply(response -> {
-									if (response.getResponseModel().getModel() != null) {
+									if (response.getResponseModel() != null
+											&& response.getResponseModel().getModel() != null) {
 										this.timeGraphAnalysis.computeStates(traceServer,
 												response.getResponseModel().getModel().getRows());
 									}
@@ -103,7 +105,7 @@ public class TimeGraphService {
 			final Body<GetTimeGraphTreeRequestDto> body) {
 		return traceServer.getTspClient().getTimeGraphApiAsync().getTimeGraphTree(experimentUuid, outputId, body)
 				.thenApply(response -> {
-					if (response.getResponseModel().getModel() != null) {
+					if (response.getResponseModel() != null && response.getResponseModel().getModel() != null) {
 						this.timeGraphAnalysis.computeTrees(traceServer,
 								response.getResponseModel().getModel().getEntries());
 					}

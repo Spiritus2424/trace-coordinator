@@ -28,6 +28,7 @@ import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
+import org.glassfish.hk2.api.ServiceLocator;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -161,6 +162,7 @@ public class TimeGraphController {
 				.map((TraceServer traceServer) -> this.timeGraphService.getTree(traceServer, experimentUuid, outputId,
 						body))
 				.map(CompletableFuture::join)
+				.filter(Objects::nonNull)
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {
 						accumulator = genericResponse;
@@ -225,6 +227,9 @@ public class TimeGraphController {
 		return Response.ok(genericResponseMerged).build();
 	}
 
+	@Inject
+	ServiceLocator serviceLocator;
+
 	@POST
 	@Path("tooltip/actions/{actionId}")
 	public Response applyActionTooltips(
@@ -242,7 +247,8 @@ public class TimeGraphController {
 							body).whenComplete((Void, exception) -> {
 								if (exception == null) {
 									this.actionManager.getActionApplied().put(experimentUuid,
-											new CriticalPathAction(traceServer, experimentUuid));
+											new CriticalPathAction(traceServer,
+													experimentUuid));
 								}
 							});
 				});

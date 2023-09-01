@@ -1,12 +1,13 @@
 package org.eclipse.trace.coordinator.core.timegraph;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import org.eclipse.trace.coordinator.core.action.IAction;
@@ -18,10 +19,8 @@ import org.eclipse.tsp.java.client.api.graph.TcpEventKey;
 import org.eclipse.tsp.java.client.api.graph.Vertex;
 import org.eclipse.tsp.java.client.api.graph.Worker;
 import org.eclipse.tsp.java.client.api.timegraph.TimeGraphModel;
-import org.eclipse.tsp.java.client.api.timegraph.TimeGraphRow;
 import org.eclipse.tsp.java.client.api.timegraph.TimeGraphState;
 import org.eclipse.tsp.java.client.shared.query.Body;
-import org.eclipse.tsp.java.client.shared.query.QueryInterval;
 import org.eclipse.tsp.java.client.shared.query.TimeRange;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -31,16 +30,16 @@ import jakarta.inject.Inject;
 import lombok.Getter;
 
 public class CriticalPathAction implements IAction<TimeGraphModel> {
+
 	@Inject
 	private TimeGraphService timeGraphService;
 	@Inject
 	private TraceServerManager traceServerManager;
 	@Inject
 	private GraphService graphService;
-
 	@Getter
 	private TraceServer hostTraceServer;
-
+	@Getter
 	private UUID experimentUuid;
 
 	public CriticalPathAction(TraceServer traceServer, UUID experimentUuid) {
@@ -63,55 +62,49 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 		/*
 		 * Find all the Network states in the TimeGraphModel
 		 */
-		Queue<TimeGraphState> networkStates = this.findStyleState(timeGraphModel, CriticalPathStyle.NETWORK);
+		List<TimeGraphState> networkStates = this.findStyleState(timeGraphModel, CriticalPathStyle.NETWORK);
 
 		/*
 		 * Find unmatched vertex mapped the network state for the host TraceServer
 		 */
-		TimeGraphState networkState = networkStates.poll();
-		Map<TimeGraphState, List<Vertex>> unmatchedVertexesForEachStates = new ConcurrentHashMap<>();
-		while (networkState != null) {
-			Body<TimeRange> body = new Body<>(new TimeRange(networkState.getStart(), networkState.getEnd()));
-			this.graphService.getUnmatchedVertexes(this.hostTraceServer,
-					experimentUuid, body).thenAccept(unmatchedVertexes -> {
-						unmatchedVertexesForEachStates.put(networkState, unmatchedVertexes);
-					});
+		Multimap<TimeGraphState, Vertex> unmatchedVertexesForEachStates = ArrayListMultimap.create();
+		List<CompletableFuture<Void>> unmatchedVertexesFutures = new ArrayList<>();
+		for (TimeGraphState timeGraphState : networkStates) {
+			unmatchedVertexesFutures.add(
+					this.getUnmatchedVertexes(timeGraphState).thenAccept(
+							unmatchedVertexes -> unmatchedVertexesForEachStates.putAll(timeGraphState,
+									unmatchedVertexes)));
 		}
+		CompletableFuture
+				.allOf(unmatchedVertexesFutures.toArray(new CompletableFuture[unmatchedVertexesFutures.size()])).join();
 
 		/*
-		 * Find the TcpEventKey for the unmatchedVertex
+		 * Find the TcpEventKey for the unmatchedVertex for each NetworkState
 		 */
-		List<TcpEventKey> tcpEventKeys = unmatchedVertexesForEachStates.values().stream()
-				.flatMap(List::stream)
-				.filter(vertex -> indexes.get(this.hostTraceServer).containsKey(vertex))
-				.map(vertex -> indexes.get(this.hostTraceServer).get(vertex))
-				.collect(Collectors.toList());
+		Multimap<TimeGraphState, TcpEventKey> tcpEventKeysForEachStates = ArrayListMultimap.create();
+		for (TimeGraphState networkState : unmatchedVertexesForEachStates.keySet()) {
+			List<TcpEventKey> list = this.getTcpEventKeys(indexes.get(this.hostTraceServer),
+					(List<Vertex>) unmatchedVertexesForEachStates.get(networkState));
+			tcpEventKeysForEachStates.putAll(networkState, list);
+		}
 
 		/*
 		 * Match the tcpEventKey with other traceServer using the indexes
 		 */
-
-		Map<TraceServer, Map<Vertex, TcpEventKey>> indexesShallowCopy = new ConcurrentHashMap<>(indexes);
-		for (TcpEventKey tcpEventKey : tcpEventKeys) {
-			cluster.forEach(traceServer -> {
-				indexesShallowCopy.get(traceServer)
-						.entrySet()
-						.removeIf(entry -> entry.getValue().equals(tcpEventKey));
-			});
+		Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedIndexes = this.getMatchedIndexes(cluster, indexes,
+				tcpEventKeysForEachStates);
+		for (TimeGraphState networkState : tcpEventKeysForEachStates.keySet()) {
+			this.getMatchedIndexes(cluster, indexes,
+					tcpEventKeysForEachStates);
 		}
 
 		/*
 		 * Find the Workers on each TraceServer needed to complete the criticalPath
 		 */
-		Multimap<TraceServer, Worker> traceServerWorkers = ArrayListMultimap.create();
-		cluster.forEach(traceServer -> {
-			List<Worker> workers = indexesShallowCopy.get(traceServer).keySet().stream()
-					.map(vertex -> this.graphService.getWorker(traceServer, experimentUuid, vertex.getWorkerId()))
-					.map(CompletableFuture::join)
-					.distinct() // Remove duplicate Worker Id for the same TraceServer
-					.collect(Collectors.toList());
-			traceServerWorkers.putAll(traceServer, workers);
-		});
+		Map<TimeGraphState, Multimap<TraceServer, Worker>> traceServerWorkers = this.findTraceServerWorkers(cluster,
+				matchedIndexes);
+
+		System.out.println(traceServerWorkers);
 
 	}
 
@@ -125,75 +118,61 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 		return indexes;
 	}
 
-	private Queue<TimeGraphState> findStyleState(TimeGraphModel timeGraphModel, CriticalPathStyle criticalPathStyle) {
+	private List<TimeGraphState> findStyleState(TimeGraphModel timeGraphModel, CriticalPathStyle criticalPathStyle) {
 		return timeGraphModel.getRows().stream()
 				.map(timeGraphRow -> timeGraphRow.getStates())
 				.flatMap(List::stream)
 				.filter(timeGraphState -> timeGraphState.getStyle().getParentKey().equals(criticalPathStyle.toString()))
-				.collect(Collectors.toCollection(ConcurrentLinkedQueue::new));
+				.collect(Collectors.toList());
 	}
 
-	// private List<Integer> collectItems(List<TraceServer> cluster, UUID
-	// experimentUuid, QueryInterval queryInterval) {
-	// String outputId =
-	// "org.eclipse.tracecompass.internal.analysis.os.linux.core.threadstatus.ThreadStatusDataProvider";
-	// return cluster.stream()
-	// .map(traceServer -> this.timeGraphService.getTree(traceServer,
-	// experimentUuid, outputId,
-	// new Body<>(new GetTimeGraphTreeRequestDto(null, queryInterval))))
-	// .map(CompletableFuture::join)
-	// .map(GenericResponse::getModel)
-	// .filter(Objects::nonNull)
-	// .map(EntryModel::getEntries)
-	// .flatMap(List::stream)
-	// .map(TimeGraphEntry::getId)
-	// .collect(Collectors.toList());
-	// }
-
-	// private List<TimeGraphRow> collectMissingStates(List<TraceServer> cluster,
-	// UUID experimentUuid,
-	// QueryInterval queryInterval) {
-	// String outputId =
-	// "org.eclipse.tracecompass.internal.analysis.os.linux.core.threadstatus.ThreadStatusDataProvider";
-	// return cluster.stream()
-	// .map(traceServer -> this.timeGraphService.getStates(traceServer,
-	// experimentUuid, outputId,
-	// new Body<>(new GetTimeGraphStatesRequestDto(queryInterval, null))))
-	// .map(CompletableFuture::join)
-	// .map(GenericResponse::getModel)
-	// .filter(Objects::nonNull)
-	// .map(TimeGraphModel::getRows)
-	// .flatMap(List::stream)
-	// .collect(Collectors.toList());
-	// }
-
-	private void findMatchingState(List<TimeGraphRow> timeGraphRows, QueryInterval queryInterval) {
-		/**
-		 * 1. Trouver le state qui commence en même temps
-		 * 2. Voir si le state est WAIT FOR CPU, USERMODE
-		 */
+	private CompletableFuture<List<Vertex>> getUnmatchedVertexes(final TimeGraphState networkState) {
+		Body<TimeRange> body = new Body<>(new TimeRange(networkState.getStart(), networkState.getEnd()));
+		return this.graphService.getUnmatchedVertexes(this.hostTraceServer,
+				experimentUuid, body);
 	}
-	// private void collectMissingStates(List<TraceServer> traceServers, UUID
-	// experimentUuid,
-	// List<TimeGraphState> timeGraphStates) {
-	// List<Integer> requestedItems = new ArrayList<>();
-	// timeGraphStates.stream().map(timeGraphState -> {
-	// QueryInterval queryInterval = new QueryInterval(timeGraphState.getStart(),
-	// timeGraphState.getEnd(), null);
-	// traceServers.stream().map(traceServer -> {
-	// requestedItems.addAll(this.collectRequestedItems(traceServer,
-	// experimentUuid,
-	// new Body<>(new GetTimeGraphTreeRequestDto(null, queryInterval))));
-	// return null;
-	// });
 
-	// return null;
-	// });
-	// // for (TimeGraphState timeGraphState : timeGraphStates) {
-	// // for (TraceServer traceServer : traceServers) {
+	private List<TcpEventKey> getTcpEventKeys(Map<Vertex, TcpEventKey> traceServerIndexes,
+			List<Vertex> unmatchedVertexes) {
+		return unmatchedVertexes.stream()
+				.filter(vertex -> traceServerIndexes.containsKey(vertex))
+				.map(vertex -> traceServerIndexes.get(vertex))
+				.collect(Collectors.toList());
 
-	// // }
-	// // }
+	}
 
-	// }
+	private Map<TimeGraphState, Multimap<TraceServer, Vertex>> getMatchedIndexes(List<TraceServer> cluster,
+			Map<TraceServer, Map<Vertex, TcpEventKey>> indexes, Multimap<TimeGraphState, TcpEventKey> tcpEventKeys) {
+		Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedIndexes = new ConcurrentHashMap<>();
+		for (Entry<TimeGraphState, TcpEventKey> tcpEventKeyEntry : tcpEventKeys.entries()) {
+			cluster.forEach(traceServer -> {
+				indexes.get(traceServer).entrySet().forEach(vertexEntry -> {
+					if (vertexEntry.getValue().equals(tcpEventKeyEntry.getValue())) {
+						Multimap<TraceServer, Vertex> multimap = matchedIndexes.computeIfAbsent(
+								tcpEventKeyEntry.getKey(), __ -> ArrayListMultimap.create());
+						multimap.put(traceServer, vertexEntry.getKey());
+					}
+				});
+			});
+		}
+
+		return matchedIndexes;
+	}
+
+	private Map<TimeGraphState, Multimap<TraceServer, Worker>> findTraceServerWorkers(List<TraceServer> cluster,
+			Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedIndexes) {
+		Map<TimeGraphState, Multimap<TraceServer, Worker>> traceServerWorkers = new HashMap<>();
+		for (TimeGraphState networkState : matchedIndexes.keySet()) {
+			cluster.forEach(traceServer -> {
+				List<Worker> workers = matchedIndexes.get(networkState).get(traceServer).stream()
+						.map(vertex -> this.graphService.getWorker(traceServer, experimentUuid, vertex.getWorkerId()))
+						.map(CompletableFuture::join)
+						.distinct() // Remove duplicate Worker Id for the same TraceServer
+						.collect(Collectors.toList());
+				traceServerWorkers.get(networkState).get(traceServer).addAll(workers);
+			});
+		}
+
+		return traceServerWorkers;
+	}
 }

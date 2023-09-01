@@ -74,7 +74,7 @@ public enum CriticalPathStyle {
 	NETWORK {
 		@Override
 		public String toString() {
-			return "Network";
+			return "NETWORK";
 		}
 	},
 	/** Worker is waiting for user input */
