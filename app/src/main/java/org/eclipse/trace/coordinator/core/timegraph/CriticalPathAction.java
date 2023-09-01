@@ -91,11 +91,11 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 		/*
 		 * Match the tcpEventKey with other traceServer using the indexes
 		 */
-		Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedIndexes = this.getMatchedIndexes(cluster, indexes,
-				tcpEventKeysForEachStates);
-		for (TimeGraphState networkState : tcpEventKeysForEachStates.keySet()) {
-			this.getMatchedIndexes(cluster, indexes,
-					tcpEventKeysForEachStates);
+		Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedVertexesForEachStates = new HashMap<>();
+		for (Entry<TimeGraphState, TcpEventKey> tcpEventKeyEntry : tcpEventKeysForEachStates.entries()) {
+			Multimap<TraceServer, Vertex> matchedVertexes = matchedVertexesForEachStates
+					.computeIfAbsent(tcpEventKeyEntry.getKey(), __ -> ArrayListMultimap.create());
+			matchedVertexes.putAll(this.getMatchedVertexes(cluster, indexes, tcpEventKeyEntry));
 		}
 
 		/*
@@ -141,22 +141,19 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 
 	}
 
-	private Map<TimeGraphState, Multimap<TraceServer, Vertex>> getMatchedIndexes(List<TraceServer> cluster,
-			Map<TraceServer, Map<Vertex, TcpEventKey>> indexes, Multimap<TimeGraphState, TcpEventKey> tcpEventKeys) {
-		Map<TimeGraphState, Multimap<TraceServer, Vertex>> matchedIndexes = new ConcurrentHashMap<>();
-		for (Entry<TimeGraphState, TcpEventKey> tcpEventKeyEntry : tcpEventKeys.entries()) {
-			cluster.forEach(traceServer -> {
-				indexes.get(traceServer).entrySet().forEach(vertexEntry -> {
-					if (vertexEntry.getValue().equals(tcpEventKeyEntry.getValue())) {
-						Multimap<TraceServer, Vertex> multimap = matchedIndexes.computeIfAbsent(
-								tcpEventKeyEntry.getKey(), __ -> ArrayListMultimap.create());
-						multimap.put(traceServer, vertexEntry.getKey());
-					}
-				});
-			});
+	private Multimap<TraceServer, Vertex> getMatchedVertexes(List<TraceServer> cluster,
+			Map<TraceServer, Map<Vertex, TcpEventKey>> indexes, Entry<TimeGraphState, TcpEventKey> tcpEventKeyEntry) {
+		Multimap<TraceServer, Vertex> matchedVertexes = ArrayListMultimap.create();
+
+		for (TraceServer traceServer : cluster) {
+			for (Entry<Vertex, TcpEventKey> indexEntry : indexes.get(traceServer).entrySet()) {
+				if (indexEntry.getValue().equals(tcpEventKeyEntry.getValue())) {
+					matchedVertexes.put(traceServer, indexEntry.getKey());
+				}
+			}
 		}
 
-		return matchedIndexes;
+		return matchedVertexes;
 	}
 
 	private Map<TimeGraphState, Multimap<TraceServer, Worker>> findTraceServerWorkers(List<TraceServer> cluster,
