@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,6 +16,7 @@ import org.eclipse.trace.coordinator.core.graph.GraphService;
 import org.eclipse.trace.coordinator.core.style.CriticalPathStyle;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
+import org.eclipse.tsp.java.client.api.graph.Direction;
 import org.eclipse.tsp.java.client.api.graph.TcpEventKey;
 import org.eclipse.tsp.java.client.api.graph.Vertex;
 import org.eclipse.tsp.java.client.api.graph.Worker;
@@ -116,7 +118,7 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 	private Map<TraceServer, Map<Vertex, TcpEventKey>> fetchVertexIndexes(UUID experimentUuid) {
 		final Map<TraceServer, Map<Vertex, TcpEventKey>> indexes = new ConcurrentHashMap<>();
 		this.traceServerManager.getTraceServers().forEach(traceServer -> {
-			this.graphService.getVertexIndexes(traceServer, experimentUuid)
+			this.graphService.getVertexIndexes(traceServer, experimentUuid, Optional.of(Direction.CAUSE))
 					.thenApply(traceServerIndexes -> indexes.put(traceServer, traceServerIndexes));
 		});
 
@@ -134,7 +136,7 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 	private CompletableFuture<List<Vertex>> getUnmatchedVertexes(final TimeGraphState networkState) {
 		Body<TimeRange> body = new Body<>(new TimeRange(networkState.getStart(), networkState.getEnd()));
 		return this.graphService.getUnmatchedVertexes(this.hostTraceServer,
-				experimentUuid, body);
+				experimentUuid, body, Optional.of(Direction.EFFECT));
 	}
 
 	private List<TcpEventKey> getTcpEventKeys(Map<Vertex, TcpEventKey> traceServerIndexes,
