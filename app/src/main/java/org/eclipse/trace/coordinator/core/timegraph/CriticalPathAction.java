@@ -114,8 +114,7 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 					GraphDto graph = this.graphService.createCriticalPath(entry.getKey(), experimentUuid,
 							new Body<>(new CreateCriticalPathDto(startVertex, endVertex))).join();
 
-					System.out.println(graph.getArrows().size());
-					System.out.println(graph.getRows().size());
+					System.out.println(graph);
 				}
 
 			}
@@ -171,8 +170,8 @@ public class CriticalPathAction implements IAction<TimeGraphModel> {
 	private List<TcpEventKey> getTcpEventKeys(Map<Vertex, TcpEventKey> traceServerIndexes,
 			List<Vertex> unmatchedVertexes) {
 		return unmatchedVertexes.stream()
-				.filter(vertex -> traceServerIndexes.containsKey(vertex))
-				.map(vertex -> traceServerIndexes.get(vertex))
+				.filter(traceServerIndexes::containsKey)
+				.map(traceServerIndexes::get)
 				.collect(Collectors.toList());
 
 	}
