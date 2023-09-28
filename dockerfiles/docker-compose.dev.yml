@@ -1,54 +1,26 @@
 version: "3.9"
 
 services:
-  trace-coordinator:
-    container_name: Trace-Coordinator
-    image: trace-coordinator
-    network_mode: "host"
-    volumes:
-      - ${PWD}/.trace-coordinator.yml:/app/bin/.trace-coordinator.yml
-    ports:
-      - "8080:8080"
-
-  trace-server-1:
+  http-server:
     container_name: Trace-Server-1
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/apt:/apt:ro
+      - ${PWD}/traces/301-tracing-multiple-machines/sync/httpServer:/traces/httpServer:ro
     ports:
       - "8081:8080"
 
-  trace-server-2:
+  http-client:
     container_name: Trace-Server-2
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/pacman:/pacman:ro
+      - ${PWD}/traces/301-tracing-multiple-machines/sync/httpClient:/traces/httpClient:ro
     ports:
       - "8082:8080"
 
   trace-server-3:
-    container_name: Trace-Server-3
-    image: trace-server
-    volumes:
-      - ${PWD}/traces/103-compare-package-managers/yum:/yum:ro
-    ports:
-      - "8083:8080"
-
-  trace-server-4:
-    container_name: Trace-Server-4
-    image: trace-server
-    volumes:
-      - ${PWD}/traces/103-compare-package-managers/zypper:/zypper:ro
-    ports:
-      - "8084:8080"
-
-  trace-server-5:
     container_name: Trace-Server-5
     image: trace-server
     volumes:
-      - ${PWD}/traces/103-compare-package-managers/apt:/apt:ro
-      - ${PWD}/traces/103-compare-package-managers/pacman:/pacman:ro
-      - ${PWD}/traces/103-compare-package-managers/yum:/yum:ro
-      - ${PWD}/traces/103-compare-package-managers/zypper:/zypper:ro
+      - ${PWD}/traces/301-tracing-multiple-machines/sync:/traces/:ro
     ports:
       - "8085:8080"

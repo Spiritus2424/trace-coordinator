@@ -75,7 +75,6 @@ public class TraceController {
 		}
 
 		CompletableFuture.allOf(futureList.toArray(new CompletableFuture[futureList.size()])).join();
-
 	}
 
 	@GET

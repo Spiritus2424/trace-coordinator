@@ -7,7 +7,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
+import org.eclipse.tsp.java.client.api.graph.CreateCriticalPathDto;
 import org.eclipse.tsp.java.client.api.graph.Direction;
+import org.eclipse.tsp.java.client.api.graph.GraphDto;
 import org.eclipse.tsp.java.client.api.graph.TcpEventKey;
 import org.eclipse.tsp.java.client.api.graph.Vertex;
 import org.eclipse.tsp.java.client.api.graph.Worker;
@@ -37,4 +39,12 @@ public class GraphService {
 		return traceServer.getTspClient().getGraphApiAsync().fetchVertexIndexes(experimentUuid, optionalDirection)
 				.thenApply(TspClientResponse::getResponseModel);
 	}
+
+	public CompletableFuture<GraphDto> createCriticalPath(final TraceServer traceServer, final UUID experiementUuid,
+			Body<CreateCriticalPathDto> body) {
+		return traceServer.getTspClient().getGraphApiAsync().createCriticalPath(experiementUuid,
+				body)
+				.thenApply(TspClientResponse::getResponseModel);
+	}
+
 }
