@@ -1,0 +1,88 @@
+@expUuid = "cde21a0a-35cd-37d4-8fdc-d1ecad068f6b"
+@outputId = "org.eclipse.tracecompass.internal.analysis.os.linux.core.threadstatus.ThreadStatusDataProvider"
+@apiUrl= {{baseUrl}}/experiments/{{expUuid}}/outputs/timeGraph/{{outputId}}/
+
+POST {{apiUrl}}/tree
+Content-Type: application/json
+{
+  "parameters": {
+  }
+}
+
+POST {{apiUrl}}/states
+Content-Type: application/json
+{
+  "parameters": {
+    "requested_timerange": {
+      "start": 1539975458466483700,
+      "end": 1539975465845162800,
+      "nbTimes": 43455
+    },
+    "requested_items": [
+    ]
+  }
+}
+
+
+POST {{apiUrl}}/arrows
+Content-Type: application/json
+{
+  "parameters": {
+    "requested_timerange": {
+      "start": 1539841340824609450,
+      "end": 1539841341597760977,
+      "nbTimes": 65536
+    }
+  }
+}
+
+
+POST {{apiUrl}}/tooltip
+Content-Type: application/json
+{
+  "parameters": {
+    "requested_times": [
+      1539786952423533083
+    ],
+    "requested_items": [
+      973
+    ],
+    "requested_element": {
+      "elementType": "state",
+      "time": 1539786952423533083,
+      "duration": 3672059
+    }
+  }
+}
+
+POST {{apiUrl}}/tooltip/actions
+Content-Type: application/json
+{
+  "parameters": {
+    "requested_times": [
+      1539786952423533083
+    ],
+    "requested_items": [
+      4611686018427388565
+    ],
+    "requested_element": {
+      "elementType": "state",
+      "time": 1539786952423533083,
+      "duration": 3672059
+    }
+  }
+}
+
+@actionId = "FollowThreadAction"
+POST {{apiUrl}}/tooltip/actions/{{actionId}}
+Content-Type: application/json
+{
+  "parameters": {
+    "hostThread": {
+      "tid": 18369,
+      "host": "\"aa573eff-7a82-4d29-9a41-9df81fca7502\""
+    }
+  }
+}
+
+

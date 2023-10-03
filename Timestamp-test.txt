@@ -1,15 +1,19 @@
 1er network State:
+ElapsedTime: 3'749'550
 start: 1539975458513731973
 end: 1539975458517481523
 
-2ieme network State
+2ieme network State:
+ElapsedTime: 1'418'630
 start: 1539975458517774934
 end: 1539975458519193564
 
 3ieme network State:
+ElapsedTime: 3'111'179'218
 start: 1539975458519317514
 end: 1539975461630496732
 
 4ieme network State:
+ElapsedTime: 1'145'431'109
 start: 1539975461633473337
 end: 1539975462778904446

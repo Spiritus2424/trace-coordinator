@@ -1,0 +1,33 @@
+@expUuid = cde21a0a-35cd-37d4-8fdc-d1ecad068f6b
+@apiUrl= {{baseUrl}}/experiments
+
+### Get Experiments
+GET {{apiUrl}}/{{expUuid}}
+
+### Create Experiments
+
+POST {{apiUrl}}
+Content-Type: application/json
+
+{
+  "parameters": {
+    "name": "Experiment Name",
+    "traces": [
+      "c862ca47-ff6b-36e8-aadb-c3e2b1844f25"
+    ]
+  }
+}
+
+### Update Experiments
+
+PUT {{apiUrl}}/{{expUuid}}
+Content-Type: application/json
+
+{
+
+}
+
+
+### Delete Experiments
+DELETE {{apiUrl}}/{{expUuid}} HTTP/1.1
+

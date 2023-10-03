@@ -1,0 +1,22 @@
+@uuid =
+@apiUrl= {{baseUrl}}/traces
+
+
+### Get Traces
+GET {{apiUrl}}/{{uuid}}
+
+
+### Open Trace
+POST {{apiUrl}} 
+Content-Type: application/json
+
+{
+  "parameters": {
+    "uri": "/home/spiritus/ws/trace-coordinator/traces/301-tracing-multiple-machines/sync/httpServer",
+    "maxDepth": 0
+  }
+}
+
+### Delete Traces
+DELETE {{apiUrl}}/{{uuid}}
+
