@@ -12,10 +12,13 @@ Content-Type: application/json
 
 {
   "parameters": {
-    "uri": "/home/spiritus/ws/trace-coordinator/traces/301-tracing-multiple-machines/sync/httpServer",
-    "maxDepth": 0
+    "uri": "/home/spiritus/ws/trace-coordinator/traces/301-tracing-multiple-machines/sync",
+    "maxDepth": 1
   }
 }
+
+# "uri": "/home/spiritus/ws/trace-coordinator/traces/301-tracing-multiple-machines/sync/httpServer",
+# "maxDepth": 0
 
 ### Delete Traces
 DELETE {{apiUrl}}/{{uuid}}

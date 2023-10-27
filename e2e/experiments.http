@@ -13,7 +13,8 @@ Content-Type: application/json
   "parameters": {
     "name": "Experiment Name",
     "traces": [
-      "c862ca47-ff6b-36e8-aadb-c3e2b1844f25"
+      "c862ca47-ff6b-36e8-aadb-c3e2b1844f25",
+      "5910d716-f5d4-33ee-b3a8-b8fce182f059"
     ]
   }
 }

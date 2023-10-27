@@ -31,8 +31,17 @@
       shell: hostname -s
       register: short_hostname
 
+    - name: Create a tar.gz archive of from traces.
+      community.general.archive:
+        path: "/home/tmp/tracing/{{trace_name}}-{{short_hostname.stdout}}"
+        dest: "/home/tmp/tracing/{{trace_name}}-{{short_hostname.stdout}}.tar.gz"
+        format: gz
+        force_archive: true
+
+
     - name: Collect LTTng Trace
       fetch:
-        src: "/home/tmp/tracing/{{trace_name}}-{{short_hostname.stdout}}"
-        dest: "/workspaces/trace-coordinator/traces/"
+        src: "/home/tmp/tracing/{{trace_name}}-{{short_hostname.stdout}}.tar.gz"
+        dest: "/workspaces/trace-coordinator/traces/{{trace_name}}/"
+        flat: true
       ignore_errors: true

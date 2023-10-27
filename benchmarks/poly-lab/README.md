@@ -83,3 +83,9 @@ In a new terminal start the MPI program on the master node.
 ```shell
 time MPICH_PORT_RANGE=5000:5050 mpirun --hostfile $HOME/tracing/hosts -np 120 ./benchspec/HPC/513.soma_t/exe/soma_base.gnu_mpi -r 42 -t 200 --npoly=140000 --gen-state-file
 ```
+
+- `np`: Number of process
+- `r`: Global seed for the pseudo-random number generator.
+- `t`: Number of MC sweeps carried out by SOMA.
+- `npoly`: Number of polymers used (determining the simulation size)
+- `gen-state-file`: Generate a state file instead of comparing to a state file.  (default=off)

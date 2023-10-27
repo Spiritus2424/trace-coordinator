@@ -1,7 +1,7 @@
 @expUuid = cde21a0a-35cd-37d4-8fdc-d1ecad068f6b
 @apiUrl = {{baseUrl}}/experiments/{{expUuid}}/graph
 
-@workerId =
+@workerId =25
 
 ### Get worker
 
@@ -12,12 +12,13 @@ GET {{apiUrl}}/workers/{{workerId}}
 GET {{apiUrl}}/indexes
     ?direction= 
 
-### Get unmatched Vertex
-
+### Get unmatched Vertex Worker 22 timestamp 1539975458516555207
+# [4017021289, 0, 2] - [4017021289, 0, 2]
+# [3448148819, 4017021290, 18]
 GET {{apiUrl}}/vertexes
-    ?start=1539975458513731973
-    &end=1539975458519193564
-    &direction=EFFECT
+    ?start=
+    &end=
+    &direction=
 
 ### Create a critical-path
 POST {{apiUrl}}/critical-path
@@ -26,12 +27,14 @@ Content-Type: application/json
 {
   "parameters": {
     "startVertex": {
-      "workerId": 133,
-      "timestamp": 1539975461621254810
+      "workerId": 25,
+      "timestamp": 1539975458513675734
     },
     "endVertex": {
-      "workerId": 37,
-      "timestamp": 1539975461621271632
+      "workerId": 16,
+      "timestamp": 1539975458519193565
     }
   }
 }
+
+
