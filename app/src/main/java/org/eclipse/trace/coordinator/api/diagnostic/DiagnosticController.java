@@ -6,11 +6,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.trace.coordinator.core.diagnostic.DiagnosticService;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
 import org.eclipse.tsp.java.client.api.health.Health;
 import org.eclipse.tsp.java.client.api.health.HealthStatus;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLogBuilder;
 import org.glassfish.hk2.api.Immediate;
 
 import jakarta.annotation.PostConstruct;
@@ -27,12 +31,18 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 @Immediate
 public class DiagnosticController {
+	private final @NonNull Logger logger;
 
 	@Inject
 	DiagnosticService diagnosticService;
 
 	@Inject
 	TraceServerManager traceServerManager;
+
+	public DiagnosticController() {
+		this.logger = TraceCompassLog.getLogger(DiagnosticController.class);
+
+	}
 
 	@PostConstruct
 	private void checkTraceServerStatus() {
@@ -61,15 +71,19 @@ public class DiagnosticController {
 	@GET
 	@Path("health")
 	public Response getHealthStatus() {
-		final Health healthMerged = this.traceServerManager.getTraceServers()
-				.stream()
-				.map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
-				.map(CompletableFuture::join)
-				.allMatch(health -> health.getStatus() == HealthStatus.UP)
-						? new Health(HealthStatus.UP)
-						: new Health(HealthStatus.DOWN);
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"DiagnosticController#getHealthStatus").build()) {
 
-		return Response.ok(healthMerged).build();
+			final Health healthMerged = this.traceServerManager.getTraceServers()
+					.stream()
+					.map((TraceServer traceServer) -> this.diagnosticService.getStatus(traceServer))
+					.map(CompletableFuture::join)
+					.allMatch(health -> health.getStatus() == HealthStatus.UP)
+							? new Health(HealthStatus.UP)
+							: new Health(HealthStatus.DOWN);
+
+			return Response.ok(healthMerged).build();
+		}
 	}
 
 }

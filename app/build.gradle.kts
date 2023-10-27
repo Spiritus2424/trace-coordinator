@@ -22,6 +22,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+	
 }
 
 repositories {
@@ -57,7 +58,7 @@ dependencies {
     implementation("com.google.guava:guava:31.0.1-jre")
 
     // Tsp Java Client
-    implementation("org.eclipse:tsp-java-client-insiders:v2.6.18-alpha")
+    implementation("org.eclipse:tsp-java-client-insiders:v2.7.0-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
@@ -72,6 +73,9 @@ dependencies {
 	testAnnotationProcessor("org.projectlombok:lombok:1.18.26")
 
 
+	// Eclipse Annotation
+	implementation("org.eclipse.jdt:org.eclipse.jdt.annotation:2.2.700")
+
 }
 
 tasks.named<Test>("test") {
@@ -82,4 +86,9 @@ tasks.named<Test>("test") {
 
 tasks.jar {
 	archiveFileName.set("${project.name}.jar")
+}
+
+tasks.withType<JavaExec> {
+	systemProperty("java.util.logging.config.file", System.getProperty("user.dir") + "/logging.properties")
+	systemProperty("org.eclipse.tracecompass.logging", "true")
 }
