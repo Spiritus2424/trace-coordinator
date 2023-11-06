@@ -1,0 +1,18 @@
+FROM gradle:8.1.1-jdk17-alpine AS packager
+
+ARG GITHUB_USER
+ARG GITHUB_TOKEN
+
+ENV GITHUB_USER=${GITHUB_USER}
+ENV GITHUB_TOKEN=${GITHUB_TOKEN}
+
+COPY ./ /app/
+
+WORKDIR /app/
+
+RUN mkdir -p ~/.tracecompass/logs && gradle build -x test --no-daemon
+
+ENV HOST="0.0.0.0"
+ENV PORT="8080"
+
+ENTRYPOINT ["gradle", "run"]

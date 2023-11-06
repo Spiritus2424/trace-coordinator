@@ -86,6 +86,6 @@ time MPICH_PORT_RANGE=5000:5050 mpirun --hostfile $HOME/tracing/hosts -np 120 ./
 
 - `np`: Number of process
 - `r`: Global seed for the pseudo-random number generator.
-- `t`: Number of MC sweeps carried out by SOMA.
+- `t`: Number of simulated time steps.
 - `npoly`: Number of polymers used (determining the simulation size)
 - `gen-state-file`: Generate a state file instead of comparing to a state file.  (default=off)
