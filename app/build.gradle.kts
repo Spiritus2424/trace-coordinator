@@ -16,7 +16,13 @@ plugins {
 }
 application {
     mainClass.set("org.eclipse.trace.coordinator.Main")
+	// Set system properties for start script
+    applicationDefaultJvmArgs = listOf(
+		"-Djava.util.logging.config.file=logging.properties",
+		"-Dorg.eclipse.tracecompass.logging=" + System.getenv("LOGGING")
+	)
 }
+
 
 java {
     toolchain {
@@ -92,3 +98,7 @@ tasks.withType<JavaExec> {
 	systemProperty("java.util.logging.config.file", System.getProperty("user.dir") + "/logging.properties")
 	systemProperty("org.eclipse.tracecompass.logging", "true")
 }
+
+// task createStartScripts(type: CreateStartScripts) {
+// 	appNameSystemProperty
+// }
