@@ -1,0 +1,6 @@
+@expUuid = cde21a0a-35cd-37d4-8fdc-d1ecad068f6b
+@apiUrl= {{baseUrl}}/experiments/{{expUuid}}/outputs
+
+### Get Experiments
+GET {{apiUrl}}
+Content-Type: application/json

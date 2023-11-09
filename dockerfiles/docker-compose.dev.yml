@@ -11,27 +11,27 @@ services:
   #     - http-client
   #   network_mode: "host"
 
-  http-server:
-    container_name: Trace-Server-1
-    image: trace-server
-    volumes:
-      - ${PWD}/traces/301-tracing-multiple-machines/sync/httpServer:/traces/httpServer:ro
-    ports:
-      - "8081:8080"
+  # http-server:
+  #   container_name: Trace-Server-1
+  #   image: trace-server
+  #   volumes:
+  #     - ${PWD}/traces/301-tracing-multiple-machines/sync/httpServer:/traces/httpServer:ro
+  #   ports:
+  #     - "8081:8080"
     
 
-  http-client:
-    container_name: Trace-Server-2
-    image: trace-server
-    volumes:
-      - ${PWD}/traces/301-tracing-multiple-machines/sync/httpClient:/traces/httpClient:ro
-    ports:
-      - "8082:8080"
+  # http-client:
+  #   container_name: Trace-Server-2
+  #   image: trace-server
+  #   volumes:
+  #     - ${PWD}/traces/301-tracing-multiple-machines/sync/httpClient:/traces/httpClient:ro
+  #   ports:
+  #     - "8082:8080"
 
   trace-server-3:
     container_name: Trace-Server-5
     image: trace-server
     volumes:
-      - ${PWD}/traces/301-tracing-multiple-machines/sync:/traces/:ro
+      - ${PWD}/traces/hpc-soma-50000-test/:/traces/:ro
     ports:
       - "8085:8080"

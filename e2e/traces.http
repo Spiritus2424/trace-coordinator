@@ -12,8 +12,8 @@ Content-Type: application/json
 
 {
   "parameters": {
-    "uri": "/home/spiritus/ws/trace-coordinator/traces/301-tracing-multiple-machines/sync",
-    "maxDepth": 1
+    "uri": "/traces",
+    "maxDepth": 3
   }
 }
 
