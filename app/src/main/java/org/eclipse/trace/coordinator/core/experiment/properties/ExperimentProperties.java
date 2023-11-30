@@ -1,5 +1,6 @@
 package org.eclipse.trace.coordinator.core.experiment.properties;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.trace.coordinator.shared.properties.Properties;
@@ -7,12 +8,10 @@ import org.eclipse.trace.coordinator.shared.properties.Properties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @RequiredArgsConstructor
 public class ExperimentProperties implements Properties<Void> {
 
@@ -22,6 +21,10 @@ public class ExperimentProperties implements Properties<Void> {
 	@JsonProperty("traces-path")
 	@NonNull
 	private List<String> tracesPath;
+
+	public ExperimentProperties() {
+		this.tracesPath = new ArrayList<>();
+	}
 
 	@Override
 	public Void toObject() {

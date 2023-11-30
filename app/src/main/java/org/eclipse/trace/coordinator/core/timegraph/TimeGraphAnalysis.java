@@ -12,25 +12,25 @@ import org.jvnet.hk2.annotations.Service;
 public class TimeGraphAnalysis {
 
 	public void computeArrows(final TraceServer traceServer, final List<TimeGraphArrow> arrows) {
-		for (TimeGraphArrow timeGraphArrow : arrows) {
+		arrows.parallelStream().forEach(timeGraphArrow -> {
 			timeGraphArrow.setSourceId(traceServer.encodeEntryId(timeGraphArrow.getSourceId()));
 			timeGraphArrow.setTargetId(traceServer.encodeEntryId(timeGraphArrow.getTargetId()));
-		}
+		});
 	}
 
 	public void computeStates(final TraceServer traceServer, final List<TimeGraphRow> rows) {
-		for (TimeGraphRow row : rows) {
+		rows.parallelStream().forEach(row -> {
 			row.setEntryId(traceServer.encodeEntryId(row.getEntryId()));
-		}
+		});
 	}
 
 	public void computeTrees(final TraceServer traceServer, final List<TimeGraphEntry> entries) {
-		for (TimeGraphEntry entry : entries) {
+		entries.parallelStream().forEach(entry -> {
 			entry.setId(traceServer.encodeEntryId(entry.getId()));
 			if (entry.getParentId() != -1) {
 				entry.setParentId(traceServer.encodeEntryId(entry.getParentId()));
 			}
-		}
+		});
 	}
 
 }

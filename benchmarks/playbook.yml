@@ -3,6 +3,7 @@
   gather_facts: true
   vars:
     trace_coordinator_config_file_name: .trace-coordinator.yml
+    ansible_remote_tmp: /home/tmp/
   tasks:
     - name: Copies .trace-coordinator.yml config file to Master 
       copy:
@@ -22,19 +23,25 @@
 
 - hosts: workers
   gather_facts: true
+  vars:
+    ansible_remote_tmp: /home/tmp/
   tasks:
     - name: Get Hostname
       shell: hostname -s
       register: short_hostname
-    
+
     - name: Stop Instance Trace Server image on Worker
       shell: "apptainer instance stop  {{short_hostname.stdout}}-tracecompass-server"
       ignore_errors: true
 
+    - name: Remove Worker Trace Server Cache 
+      shell: "rm -rf /home/tmp/.tracecompass-webapp"
+      ignore_errors: true
+
     - name: Start Instance Trace Server image on Worker
-      shell: "apptainer instance start --contain --writable-tmpfs --mount 'type=bind,source=/home/tmp/tracing/,destination=/traces' --mount 'type=bind,source=/home/tmp/ws/,destination=/home/tmp/ws' docker://spiritus2424/trace-server {{short_hostname.stdout}}-tracecompass-server /usr/src/tracecompass/tracecompass-server"
+      shell: "apptainer instance start --contain --writable-tmpfs --mount 'type=bind,source=/home/tmp/traces/,destination=/home/traces' --mount 'type=bind,source=/home/tmp,destination=/home/tmp' docker://spiritus2424/trace-server {{short_hostname.stdout}}-tracecompass-server /usr/src/tracecompass/tracecompass-server"
     
     # Could be remove if we have startscript in docker/apptainer: https://apptainer.org/docs/user/main/docker_and_oci.html#compat-flag
     - name: Run Trace Server image on Worker
-      shell: "nohup apptainer run --env TRACESERVER_PORT=5000,TRACING_SERVER_ROOT=/home/tmp/ws instance://{{short_hostname.stdout}}-tracecompass-server /usr/src/tracecompass/tracecompass-server </dev/null >/dev/null 2>&1 &"
+      shell: "nohup apptainer run --env TRACESERVER_PORT=5000,TRACING_SERVER_ROOT=/home/tmp instance://{{short_hostname.stdout}}-tracecompass-server /usr/src/tracecompass/tracecompass-server </dev/null >/dev/null 2>&1 &"
 

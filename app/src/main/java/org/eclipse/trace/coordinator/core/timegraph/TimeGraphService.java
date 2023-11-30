@@ -52,15 +52,16 @@ public class TimeGraphService {
 			final String outputId,
 			final Body<GetTimeGraphStatesRequestDto> body) {
 
-		Body<GetTimeGraphStatesRequestDto> newBody = body.getParameters().getRequestedItems().isEmpty() ? body
-				: new Body<>(new GetTimeGraphStatesRequestDto(
-						body.getParameters().getRequestedTimerange(),
-						body.getParameters().getRequestedItems().stream()
-								.filter(traceServer::isValidEncodeEntryId)
-								.map(traceServer::decodeEntryId)
-								.collect(Collectors.toList())));
+		Body<GetTimeGraphStatesRequestDto> newBody = body.getParameters().getRequestedItems() == null
+				|| body.getParameters().getRequestedItems().isEmpty() ? body
+						: new Body<>(new GetTimeGraphStatesRequestDto(
+								body.getParameters().getRequestedTimerange(),
+								body.getParameters().getRequestedItems().stream()
+										.filter(traceServer::isValidEncodeEntryId)
+										.map(traceServer::decodeEntryId)
+										.collect(Collectors.toList())));
 
-		return (body.getParameters().getRequestedItems().isEmpty()
+		return (body.getParameters().getRequestedItems() == null || body.getParameters().getRequestedItems().isEmpty()
 				|| !newBody.getParameters().getRequestedItems().isEmpty())
 						? traceServer.getTspClient().getTimeGraphApiAsync()
 								.getTimeGraphStates(experimentUuid, outputId, newBody)

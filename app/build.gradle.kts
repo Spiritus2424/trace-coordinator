@@ -94,11 +94,8 @@ tasks.jar {
 	archiveFileName.set("${project.name}.jar")
 }
 
-tasks.withType<JavaExec> {
-	systemProperty("java.util.logging.config.file", System.getProperty("user.dir") + "/logging.properties")
-	systemProperty("org.eclipse.tracecompass.logging", "true")
+tasks.named<JavaExec>("run")  {
+	systemProperty("java.util.logging.config.file", "logging.properties")
+	systemProperty("org.eclipse.tracecompass.logging", true)
 }
 
-// task createStartScripts(type: CreateStartScripts) {
-// 	appNameSystemProperty
-// }

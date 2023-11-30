@@ -108,22 +108,24 @@ public class TraceController {
 
 	@POST
 	public Response openTrace(@NotNull @Valid final Body<OpenTraceRequestDto> body) {
-		final List<Trace> traces = this.traceServerManager.getTraceServers().stream()
+		final List<Trace> traces = this.traceServerManager.getTraceServers().parallelStream()
 				.map((TraceServer traceServer) -> {
 					String traceName = body.getParameters().getName();
 					if (body.getParameters().getMaxDepth() == 0) {
 						if (traceName == null) {
 							final String[] uriSplit = body.getParameters().getUri().split("/");
-							traceName = uriSplit[uriSplit.length - 1];
+							traceName = uriSplit[uriSplit.length - 1].replace("/", "\\");
 						}
-						traceName = String.format("%s$%s", traceServer.getHost(), traceName.replace("/", "\\"));
+						traceName = String.format("%s$%s", traceServer.getHost(), traceName);
 					} else {
-						traceName = String.format("%s$%s", traceServer.getHost(), body.getParameters().getName());
+						traceName = (traceName == null) ? traceServer.getHost().concat("$")
+								: String.format("%s$%s", traceServer.getHost(), traceName);
 					}
 
-					body.getParameters()
-							.setName(traceName);
-					return this.traceService.openTraces(traceServer, body);
+					OpenTraceRequestDto newDto = new OpenTraceRequestDto(body.getParameters().getUri(), traceName, null,
+							body.getParameters().getMaxDepth());
+
+					return this.traceService.openTraces(traceServer, new Body<>(newDto));
 				})
 				.map(CompletableFuture::join)
 				.flatMap(List::stream)

@@ -36,7 +36,7 @@ public class OutputDescriptorController {
 	@GET
 	public Response getOutputDescriptors(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
 		final Set<OutputDescriptor> outputDescriptors = this.traceServerManager.getTraceServers()
-				.stream()
+				.parallelStream()
 				.map((TraceServer traceServer) -> this.outputDescriptorService.getOutputDescriptors(traceServer,
 						experimentUuid))
 				.map(CompletableFuture::join)

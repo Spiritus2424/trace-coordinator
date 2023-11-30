@@ -16,12 +16,14 @@ public class TraceServerProperties implements Properties<TraceServer> {
 	private List<String> tracesPath;
 
 	public TraceServerProperties() {
+		this.tracesPath = new ArrayList<>();
 	}
 
 	public TraceServerProperties(String host, String port, List<String> tracesPath) {
 		this.host = host;
 		this.port = port;
-		this.tracesPath = tracesPath;
+		this.tracesPath = (tracesPath == null) ? new ArrayList<>() : tracesPath;
+
 	}
 
 	public String getHost() {

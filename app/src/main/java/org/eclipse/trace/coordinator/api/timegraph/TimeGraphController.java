@@ -1,13 +1,12 @@
 package org.eclipse.trace.coordinator.api.timegraph;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.trace.coordinator.core.action.ActionManager;
 import org.eclipse.trace.coordinator.core.timegraph.CriticalPathAction;
@@ -22,7 +21,6 @@ import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphStatesRequestDt
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTooltipsRequestDto;
 import org.eclipse.tsp.java.client.api.timegraph.dto.GetTimeGraphTreeRequestDto;
 import org.eclipse.tsp.java.client.core.action.ActionDescriptor;
-import org.eclipse.tsp.java.client.shared.entry.EntryHeader;
 import org.eclipse.tsp.java.client.shared.entry.EntryModel;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
@@ -70,13 +68,16 @@ public class TimeGraphController {
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {
 						accumulator = genericResponse;
-					} else {
+					} else if (genericResponse != null) {
 						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
 							accumulator.setStatus(genericResponse.getStatus());
 							accumulator.setMessage(genericResponse.getMessage());
 						}
 						if (genericResponse.getModel() != null) {
-							accumulator.getModel().addAll(genericResponse.getModel());
+							accumulator.setModel(
+									Stream.concat(accumulator.getModel().parallelStream(),
+											genericResponse.getModel().parallelStream())
+											.collect(Collectors.toList()));
 						}
 					}
 
@@ -101,13 +102,16 @@ public class TimeGraphController {
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {
 						accumulator = genericResponse;
-					} else {
+					} else if (genericResponse != null) {
 						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
 							accumulator.setStatus(genericResponse.getStatus());
 							accumulator.setMessage(genericResponse.getMessage());
 						}
 						if (genericResponse.getModel() != null) {
-							accumulator.getModel().getRows().addAll(genericResponse.getModel().getRows());
+							accumulator.getModel().setRows(
+									Stream.concat(accumulator.getModel().getRows().parallelStream(),
+											genericResponse.getModel().getRows().parallelStream())
+											.collect(Collectors.toList()));
 						}
 					}
 
@@ -124,7 +128,7 @@ public class TimeGraphController {
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetTimeGraphTooltipsRequestDto> body) {
 		final GenericResponse<Map<String, String>> genericResponseMerged = this.traceServerManager.getTraceServers()
-				.stream()
+				.parallelStream()
 				.map((TraceServer traceServer) -> this.timeGraphService.getTooltips(traceServer, experimentUuid,
 						outputId,
 						body))
@@ -133,13 +137,16 @@ public class TimeGraphController {
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {
 						accumulator = genericResponse;
-					} else {
+					} else if (genericResponse != null) {
 						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
 							accumulator.setStatus(genericResponse.getStatus());
 							accumulator.setMessage(genericResponse.getMessage());
 						}
 						if (genericResponse.getModel() != null) {
-							accumulator.getModel().putAll(genericResponse.getModel());
+							accumulator.setModel(
+									Stream.concat(accumulator.getModel().entrySet().parallelStream(),
+											genericResponse.getModel().entrySet().parallelStream())
+											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 						}
 					}
 
@@ -155,10 +162,9 @@ public class TimeGraphController {
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetTimeGraphTreeRequestDto> body) {
-		final Set<EntryHeader> headers = new HashSet<>();
 		final GenericResponse<EntryModel<TimeGraphEntry>> genericResponseMerged = this.traceServerManager
 				.getTraceServers()
-				.stream()
+				.parallelStream()
 				.map((TraceServer traceServer) -> this.timeGraphService.getTree(traceServer, experimentUuid, outputId,
 						body))
 				.map(CompletableFuture::join)
@@ -166,22 +172,26 @@ public class TimeGraphController {
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {
 						accumulator = genericResponse;
-					} else {
+					} else if (genericResponse != null) {
 						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
 							accumulator.setStatus(genericResponse.getStatus());
 							accumulator.setMessage(genericResponse.getMessage());
 						}
 						if (genericResponse.getModel() != null) {
-							accumulator.getModel().getEntries().addAll(genericResponse.getModel().getEntries());
-							headers.addAll(genericResponse.getModel().getHeaders());
+							accumulator.getModel().setEntries(
+									Stream.concat(accumulator.getModel().getEntries().parallelStream(),
+											genericResponse.getModel().getEntries().parallelStream())
+											.collect(Collectors.toList()));
+
+							accumulator.getModel().setHeaders(Stream
+									.concat(accumulator.getModel().getHeaders().parallelStream(),
+											genericResponse.getModel().getHeaders().parallelStream())
+									.distinct()
+									.collect(Collectors.toList()));
 						}
 					}
 					return accumulator;
 				});
-
-		if (genericResponseMerged != null && genericResponseMerged.getModel() != null) {
-			genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
-		}
 
 		return Response.ok(genericResponseMerged).build();
 	}
@@ -211,7 +221,7 @@ public class TimeGraphController {
 				.reduce(null, (accumulator, genericResponse) -> {
 					if (accumulator == null) {
 						accumulator = genericResponse;
-					} else {
+					} else if (genericResponse != null) {
 						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
 							accumulator.setStatus(genericResponse.getStatus());
 							accumulator.setMessage(genericResponse.getMessage());

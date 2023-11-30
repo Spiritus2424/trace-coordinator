@@ -124,7 +124,7 @@ public class ExperimentController {
 		final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
 				.map((TraceServer traceServer) -> this.traceService.getTraces(traceServer)
 						.thenApply((List<Trace> traces) -> {
-							List<UUID> traceServerTracesUuid = traces.stream()
+							List<UUID> traceServerTracesUuid = traces.parallelStream()
 									.filter((Trace trace) -> body.getParameters().getTraces()
 											.contains(trace.getUuid()))
 									.map(Trace::getUuid)
