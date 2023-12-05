@@ -2,8 +2,6 @@ package org.eclipse.trace.coordinator.core.traceserver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.eclipse.trace.coordinator.core.configuration.ConfigurationProvider;
 import org.eclipse.trace.coordinator.core.traceserver.properties.TraceServerProperties;
@@ -32,12 +30,14 @@ public class TraceServerManager {
 		}
 
 		for (TraceServer traceServer : this.traceServers) {
-			Logger.getLogger(TraceServerManager.class.getName()).log(Level.INFO, "Trace Server: {0}",
-					traceServer.getUri().toString());
+			// Logger.getLogger(TraceServerManager.class.getName()).log(Level.INFO, "Trace
+			// Server: {0}",
+			// traceServer.getUri().toString());
 		}
 
 		if (traceServers.isEmpty()) {
-			Logger.getLogger(TraceServerManager.class.getName()).log(Level.INFO, "No trace server found");
+			// Logger.getLogger(TraceServerManager.class.getName()).log(Level.INFO, "No
+			// trace server found");
 		}
 	}
 

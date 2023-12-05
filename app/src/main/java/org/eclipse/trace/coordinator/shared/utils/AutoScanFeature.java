@@ -1,8 +1,6 @@
 package org.eclipse.trace.coordinator.shared.utils;
 
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.MultiException;
@@ -33,7 +31,8 @@ public class AutoScanFeature implements Feature {
 					new DuplicatePostProcessor());
 
 		} catch (IOException | MultiException ex) {
-			Logger.getLogger(AutoScanFeature.class.getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(AutoScanFeature.class.getName()).log(Level.SEVERE, null,
+			// ex);
 		}
 		return true;
 	}

@@ -5,9 +5,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.trace.coordinator.core.action.ActionManager;
 import org.eclipse.trace.coordinator.core.timegraph.CriticalPathAction;
 import org.eclipse.trace.coordinator.core.timegraph.TimeGraphService;
@@ -26,6 +29,9 @@ import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLogBuilder;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import jakarta.inject.Inject;
@@ -45,6 +51,8 @@ import jakarta.ws.rs.core.Response.Status;
 @Produces(MediaType.APPLICATION_JSON)
 public class TimeGraphController {
 
+	private final @NonNull Logger logger;
+
 	@Inject
 	private TimeGraphService timeGraphService;
 
@@ -54,37 +62,47 @@ public class TimeGraphController {
 	@Inject
 	private ActionManager actionManager;
 
+	public TimeGraphController() {
+		this.logger = TraceCompassLog.getLogger(TimeGraphController.class);
+
+	}
+
 	@POST
 	@Path("arrows")
 	public Response getArrows(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetTimeGraphArrowsRequestDto> body) {
-		final GenericResponse<List<TimeGraphArrow>> genericResponseMerged = this.traceServerManager.getTraceServers()
-				.stream()
-				.map((TraceServer traceServer) -> this.timeGraphService.getArrows(traceServer, experimentUuid, outputId,
-						body))
-				.map(CompletableFuture::join)
-				.reduce(null, (accumulator, genericResponse) -> {
-					if (accumulator == null) {
-						accumulator = genericResponse;
-					} else if (genericResponse != null) {
-						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-							accumulator.setStatus(genericResponse.getStatus());
-							accumulator.setMessage(genericResponse.getMessage());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"TimeGraphController#getArrows").build()) {
+			final GenericResponse<List<TimeGraphArrow>> genericResponseMerged = this.traceServerManager
+					.getTraceServers()
+					.stream()
+					.map((TraceServer traceServer) -> this.timeGraphService.getArrows(traceServer, experimentUuid,
+							outputId,
+							body))
+					.map(CompletableFuture::join)
+					.reduce(null, (accumulator, genericResponse) -> {
+						if (accumulator == null) {
+							accumulator = genericResponse;
+						} else if (genericResponse != null) {
+							if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+								accumulator.setStatus(genericResponse.getStatus());
+								accumulator.setMessage(genericResponse.getMessage());
+							}
+							if (genericResponse.getModel() != null) {
+								accumulator.setModel(
+										Stream.concat(accumulator.getModel().parallelStream(),
+												genericResponse.getModel().parallelStream())
+												.collect(Collectors.toList()));
+							}
 						}
-						if (genericResponse.getModel() != null) {
-							accumulator.setModel(
-									Stream.concat(accumulator.getModel().parallelStream(),
-											genericResponse.getModel().parallelStream())
-											.collect(Collectors.toList()));
-						}
-					}
 
-					return accumulator;
-				});
+						return accumulator;
+					});
 
-		return Response.ok(genericResponseMerged).build();
+			return Response.ok(genericResponseMerged).build();
+		}
 	}
 
 	@POST
@@ -93,32 +111,36 @@ public class TimeGraphController {
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetTimeGraphStatesRequestDto> body) {
-		final GenericResponse<TimeGraphModel> genericResponseMerged = this.traceServerManager.getTraceServers()
-				.stream()
-				.map((TraceServer traceServer) -> this.timeGraphService.getStates(traceServer, experimentUuid, outputId,
-						body))
-				.filter(Objects::nonNull)
-				.map(CompletableFuture::join)
-				.reduce(null, (accumulator, genericResponse) -> {
-					if (accumulator == null) {
-						accumulator = genericResponse;
-					} else if (genericResponse != null) {
-						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-							accumulator.setStatus(genericResponse.getStatus());
-							accumulator.setMessage(genericResponse.getMessage());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"TimeGraphController#getStates").build()) {
+			final GenericResponse<TimeGraphModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+					.stream()
+					.map((TraceServer traceServer) -> this.timeGraphService.getStates(traceServer, experimentUuid,
+							outputId,
+							body))
+					.filter(Objects::nonNull)
+					.map(CompletableFuture::join)
+					.reduce(null, (accumulator, genericResponse) -> {
+						if (accumulator == null) {
+							accumulator = genericResponse;
+						} else if (genericResponse != null) {
+							if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+								accumulator.setStatus(genericResponse.getStatus());
+								accumulator.setMessage(genericResponse.getMessage());
+							}
+							if (genericResponse.getModel() != null) {
+								accumulator.getModel().setRows(
+										Stream.concat(accumulator.getModel().getRows().parallelStream(),
+												genericResponse.getModel().getRows().parallelStream())
+												.collect(Collectors.toList()));
+							}
 						}
-						if (genericResponse.getModel() != null) {
-							accumulator.getModel().setRows(
-									Stream.concat(accumulator.getModel().getRows().parallelStream(),
-											genericResponse.getModel().getRows().parallelStream())
-											.collect(Collectors.toList()));
-						}
-					}
 
-					return accumulator;
-				});
+						return accumulator;
+					});
 
-		return Response.ok(genericResponseMerged).build();
+			return Response.ok(genericResponseMerged).build();
+		}
 	}
 
 	@POST
@@ -127,33 +149,37 @@ public class TimeGraphController {
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetTimeGraphTooltipsRequestDto> body) {
-		final GenericResponse<Map<String, String>> genericResponseMerged = this.traceServerManager.getTraceServers()
-				.parallelStream()
-				.map((TraceServer traceServer) -> this.timeGraphService.getTooltips(traceServer, experimentUuid,
-						outputId,
-						body))
-				.filter(Objects::nonNull)
-				.map(CompletableFuture::join)
-				.reduce(null, (accumulator, genericResponse) -> {
-					if (accumulator == null) {
-						accumulator = genericResponse;
-					} else if (genericResponse != null) {
-						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-							accumulator.setStatus(genericResponse.getStatus());
-							accumulator.setMessage(genericResponse.getMessage());
-						}
-						if (genericResponse.getModel() != null) {
-							accumulator.setModel(
-									Stream.concat(accumulator.getModel().entrySet().parallelStream(),
-											genericResponse.getModel().entrySet().parallelStream())
-											.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
-						}
-					}
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"TimeGraphController#getTooltips").build()) {
 
-					return accumulator;
-				});
+			final GenericResponse<Map<String, String>> genericResponseMerged = this.traceServerManager.getTraceServers()
+					.parallelStream()
+					.map((TraceServer traceServer) -> this.timeGraphService.getTooltips(traceServer, experimentUuid,
+							outputId,
+							body))
+					.filter(Objects::nonNull)
+					.map(CompletableFuture::join)
+					.reduce(null, (accumulator, genericResponse) -> {
+						if (accumulator == null) {
+							accumulator = genericResponse;
+						} else if (genericResponse != null) {
+							if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+								accumulator.setStatus(genericResponse.getStatus());
+								accumulator.setMessage(genericResponse.getMessage());
+							}
+							if (genericResponse.getModel() != null) {
+								accumulator.setModel(
+										Stream.concat(accumulator.getModel().entrySet().parallelStream(),
+												genericResponse.getModel().entrySet().parallelStream())
+												.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+							}
+						}
 
-		return Response.ok(genericResponseMerged).build();
+						return accumulator;
+					});
+
+			return Response.ok(genericResponseMerged).build();
+		}
 	}
 
 	@POST
@@ -162,38 +188,43 @@ public class TimeGraphController {
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetTimeGraphTreeRequestDto> body) {
-		final GenericResponse<EntryModel<TimeGraphEntry>> genericResponseMerged = this.traceServerManager
-				.getTraceServers()
-				.parallelStream()
-				.map((TraceServer traceServer) -> this.timeGraphService.getTree(traceServer, experimentUuid, outputId,
-						body))
-				.map(CompletableFuture::join)
-				.filter(Objects::nonNull)
-				.reduce(null, (accumulator, genericResponse) -> {
-					if (accumulator == null) {
-						accumulator = genericResponse;
-					} else if (genericResponse != null) {
-						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-							accumulator.setStatus(genericResponse.getStatus());
-							accumulator.setMessage(genericResponse.getMessage());
-						}
-						if (genericResponse.getModel() != null) {
-							accumulator.getModel().setEntries(
-									Stream.concat(accumulator.getModel().getEntries().parallelStream(),
-											genericResponse.getModel().getEntries().parallelStream())
-											.collect(Collectors.toList()));
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"TimeGraphController#getTree").build()) {
 
-							accumulator.getModel().setHeaders(Stream
-									.concat(accumulator.getModel().getHeaders().parallelStream(),
-											genericResponse.getModel().getHeaders().parallelStream())
-									.distinct()
-									.collect(Collectors.toList()));
-						}
-					}
-					return accumulator;
-				});
+			final GenericResponse<EntryModel<TimeGraphEntry>> genericResponseMerged = this.traceServerManager
+					.getTraceServers()
+					.parallelStream()
+					.map((TraceServer traceServer) -> this.timeGraphService.getTree(traceServer, experimentUuid,
+							outputId,
+							body))
+					.map(CompletableFuture::join)
+					.filter(Objects::nonNull)
+					.reduce(null, (accumulator, genericResponse) -> {
+						if (accumulator == null) {
+							accumulator = genericResponse;
+						} else if (genericResponse != null) {
+							if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+								accumulator.setStatus(genericResponse.getStatus());
+								accumulator.setMessage(genericResponse.getMessage());
+							}
+							if (genericResponse.getModel() != null) {
+								accumulator.getModel().setEntries(
+										Stream.concat(accumulator.getModel().getEntries().parallelStream(),
+												genericResponse.getModel().getEntries().parallelStream())
+												.collect(Collectors.toList()));
 
-		return Response.ok(genericResponseMerged).build();
+								accumulator.getModel().setHeaders(Stream
+										.concat(accumulator.getModel().getHeaders().parallelStream(),
+												genericResponse.getModel().getHeaders().parallelStream())
+										.distinct()
+										.collect(Collectors.toList()));
+							}
+						}
+						return accumulator;
+					});
+
+			return Response.ok(genericResponseMerged).build();
+		}
 	}
 
 	@POST

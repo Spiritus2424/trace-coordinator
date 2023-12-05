@@ -84,4 +84,4 @@
         mode: '777'
 
     - name: Execute Identity Script
-      command: echo {{ansible_password}} | sh $HOME/tracing/identity.sh
+      command: echo {{ansible_password}} | sh $HOME/tracing/identity.sh {{ansible_user}}

@@ -39,7 +39,7 @@
       ignore_errors: true
 
     - name: Start Instance Trace Server image on Worker
-      shell: "apptainer instance start --contain --writable-tmpfs --mount 'type=bind,source=/home/tmp/traces/,destination=/home/traces' --mount 'type=bind,source=/home/tmp,destination=/home/tmp' docker://spiritus2424/trace-server {{short_hostname.stdout}}-tracecompass-server /usr/src/tracecompass/tracecompass-server"
+      shell: "apptainer instance start --contain --writable-tmpfs --mount 'type=bind,source=/home/tmp/benchmark-1/,destination=/home/traces' --mount 'type=bind,source=/home/tmp,destination=/home/tmp' docker://spiritus2424/trace-server {{short_hostname.stdout}}-tracecompass-server /usr/src/tracecompass/tracecompass-server"
     
     # Could be remove if we have startscript in docker/apptainer: https://apptainer.org/docs/user/main/docker_and_oci.html#compat-flag
     - name: Run Trace Server image on Worker

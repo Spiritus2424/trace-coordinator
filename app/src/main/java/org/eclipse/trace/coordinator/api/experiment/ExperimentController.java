@@ -7,12 +7,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.eclipse.trace.coordinator.api.trace.TraceController;
 import org.eclipse.trace.coordinator.core.configuration.ConfigurationProvider;
 import org.eclipse.trace.coordinator.core.experiment.ExperimentFactory;
 import org.eclipse.trace.coordinator.core.experiment.ExperimentService;
@@ -64,7 +61,8 @@ public class ExperimentController {
 
 	@PostConstruct
 	private void loadExperiments() {
-		Logger.getLogger(TraceController.class.getName()).log(Level.INFO, "PostContruct Lauch");
+		// Logger.getLogger(TraceController.class.getName()).log(Level.INFO,
+		// "PostContruct Lauch");
 		final List<CompletableFuture<Experiment>> futureList = new ArrayList<>();
 		for (ExperimentProperties experimentProperties : this.configurationProvider.getConfiguration()
 				.getExperimentProperties()) {

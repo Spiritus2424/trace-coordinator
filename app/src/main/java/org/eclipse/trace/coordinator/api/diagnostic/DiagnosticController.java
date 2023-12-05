@@ -46,23 +46,26 @@ public class DiagnosticController {
 
 	@PostConstruct
 	private void checkTraceServerStatus() {
-		Logger.getLogger(DiagnosticController.class.getName()).log(Level.INFO, "Tracer Server Status");
+		// Logger.getLogger(DiagnosticController.class.getName()).log(Level.INFO,
+		// "Tracer Server Status");
 		List<Health> healths = traceServerManager.getTraceServers().stream()
 				.map(traceServer -> this.diagnosticService.getStatus(traceServer))
 				.map(CompletableFuture::join)
 				.collect(Collectors.toList());
 
 		if (healths.stream().allMatch(health -> health.getStatus() == HealthStatus.DOWN)) {
-			Logger.getLogger(DiagnosticController.class.getName()).log(Level.SEVERE, "All trace-servers are down");
+			// Logger.getLogger(DiagnosticController.class.getName()).log(Level.SEVERE, "All
+			// trace-servers are down");
 		} else if (healths.stream().allMatch(health -> health.getStatus() == HealthStatus.UP)) {
-			Logger.getLogger(DiagnosticController.class.getName()).log(Level.INFO, "All trace-servers are up");
+			// Logger.getLogger(DiagnosticController.class.getName()).log(Level.INFO, "All
+			// trace-servers are up");
 		} else {
 			for (int i = 0; i < healths.size(); i++) {
 				String traceServerUri = this.traceServerManager.getTraceServers().get(i).getUri().toString();
 				HealthStatus healthStatus = healths.get(i).getStatus();
 				Level levelType = (healthStatus == HealthStatus.UP) ? Level.FINE : Level.WARNING;
-				Logger.getLogger(DiagnosticController.class.getName()).log(levelType,
-						String.format("%s : %s", traceServerUri, healthStatus.name()));
+				// Logger.getLogger(DiagnosticController.class.getName()).log(levelType,
+				// String.format("%s : %s", traceServerUri, healthStatus.name()));
 
 			}
 		}
@@ -71,6 +74,7 @@ public class DiagnosticController {
 	@GET
 	@Path("health")
 	public Response getHealthStatus() {
+
 		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
 				"DiagnosticController#getHealthStatus").build()) {
 

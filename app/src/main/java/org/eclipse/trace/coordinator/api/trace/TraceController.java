@@ -52,7 +52,7 @@ public class TraceController {
 
 	@PostConstruct
 	public void loadTraces() {
-		Logger.getLogger(TraceController.class.getName()).log(Level.INFO, "PostContruct Lauch");
+		// Logger.getLogger(TraceController.class.getName()).log(Level.INFO, "PostContruct Lauch");
 		final List<CompletableFuture<Void>> futureList = new ArrayList<>();
 		final String scheme = "(.*)";
 		for (TraceServer traceServer : this.traceServerManager.getTraceServers()) {
