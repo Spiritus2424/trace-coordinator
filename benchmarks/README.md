@@ -8,6 +8,5 @@
 ## Requirements
 
 - Ansible
-- Python 3 (Optional)
 
 ## Getting started

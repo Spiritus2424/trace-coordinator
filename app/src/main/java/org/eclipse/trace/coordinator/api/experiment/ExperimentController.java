@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.trace.coordinator.core.configuration.ConfigurationProvider;
 import org.eclipse.trace.coordinator.core.experiment.ExperimentFactory;
 import org.eclipse.trace.coordinator.core.experiment.ExperimentService;
@@ -22,6 +25,9 @@ import org.eclipse.tsp.java.client.api.experiment.dto.CreateExperimentRequestDto
 import org.eclipse.tsp.java.client.api.trace.Trace;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.query.Query;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLogBuilder;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -46,6 +52,7 @@ import jakarta.ws.rs.core.Response.Status;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ExperimentController {
+	private final @NonNull Logger logger;
 
 	@Inject
 	private ConfigurationProvider configurationProvider;
@@ -59,10 +66,13 @@ public class ExperimentController {
 	@Inject
 	private TraceService traceService;
 
+	public ExperimentController() {
+		this.logger = TraceCompassLog.getLogger(ExperimentController.class);
+
+	}
+
 	@PostConstruct
 	private void loadExperiments() {
-		// Logger.getLogger(TraceController.class.getName()).log(Level.INFO,
-		// "PostContruct Lauch");
 		final List<CompletableFuture<Experiment>> futureList = new ArrayList<>();
 		for (ExperimentProperties experimentProperties : this.configurationProvider.getConfiguration()
 				.getExperimentProperties()) {
@@ -86,61 +96,74 @@ public class ExperimentController {
 
 	@GET
 	public Response getExperiments() {
-		final List<Experiment> distributedExperiments = this.traceServerManager.getTraceServers().stream()
-				.map(traceSercer -> this.experimentService.getExperiments(traceSercer))
-				.map(CompletableFuture::join)
-				.flatMap(List::stream)
-				.collect(groupingBy(Experiment::getUuid))
-				.values()
-				.stream()
-				.map(ExperimentFactory::createExperiment)
-				.collect(Collectors.toList());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"ExperimentController#getExperiments").build()) {
+			final List<Experiment> distributedExperiments = this.traceServerManager.getTraceServers().stream()
+					.map(traceSercer -> this.experimentService.getExperiments(traceSercer))
+					.map(CompletableFuture::join)
+					.flatMap(List::stream)
+					.collect(groupingBy(Experiment::getUuid))
+					.values()
+					.stream()
+					.map(ExperimentFactory::createExperiment)
+					.collect(Collectors.toList());
 
-		return Response.ok(distributedExperiments).build();
+			return Response.ok(distributedExperiments).build();
+		}
+
 	}
 
 	@GET
 	@Path("{expUUID}")
 	public Response getExperiment(@NotNull @PathParam("expUUID") final UUID experimentUuid) {
-		final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
-				.map(traceSercer -> this.experimentService.getExperiment(traceSercer, experimentUuid))
-				.map(CompletableFuture::join)
-				.collect(Collectors.toList());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"ExperimentController#getExperiment").build()) {
+			final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
+					.map(traceSercer -> this.experimentService.getExperiment(traceSercer, experimentUuid))
+					.map(CompletableFuture::join)
+					.collect(Collectors.toList());
 
-		Response response = null;
-		if (!experiments.isEmpty()) {
-			response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
-		} else {
-			response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();
+			Response response = null;
+			if (!experiments.isEmpty()) {
+				response = Response.ok(ExperimentFactory.createExperiment(experiments)).build();
+			} else {
+				response = Response.status(Status.NOT_FOUND).entity("No Such Experiment").build();
+			}
+
+			return response;
 		}
-
-		return response;
 	}
 
 	@POST
 	public Response createExperiment(@NotNull @Valid final Body<CreateExperimentRequestDto> body) {
-		final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
-				.map((TraceServer traceServer) -> this.traceService.getTraces(traceServer)
-						.thenApply((List<Trace> traces) -> {
-							List<UUID> traceServerTracesUuid = traces.parallelStream()
-									.filter((Trace trace) -> body.getParameters().getTraces()
-											.contains(trace.getUuid()))
-									.map(Trace::getUuid)
-									.collect(Collectors.toList());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"ExperimentController#createExperiment").build()) {
+			final List<Experiment> experiments = this.traceServerManager.getTraceServers().stream()
+					.map((TraceServer traceServer) -> this.traceService.getTraces(traceServer)
+							.thenApply((List<Trace> traces) -> {
 
-							CreateExperimentRequestDto createExperimentRequestDto = new CreateExperimentRequestDto(
-									body.getParameters().getExperimentName(),
-									traceServerTracesUuid);
+								List<UUID> traceServerTracesUuid = traces.stream()
+										.filter((Trace trace) -> body.getParameters().getTraces()
+												.contains(trace.getUuid()))
+										.map(Trace::getUuid)
+										.collect(Collectors.toList());
 
-							return this.experimentService.createExperiment(traceServer,
-									new Body<>(createExperimentRequestDto));
-						}))
-				.map(CompletableFuture::join)
-				.map(CompletableFuture::join)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toList());
+								CreateExperimentRequestDto createExperimentRequestDto = new CreateExperimentRequestDto(
+										body.getParameters().getExperimentName(),
+										traceServerTracesUuid);
 
-		return Response.ok(ExperimentFactory.createExperiment(experiments)).build();
+								return (traceServerTracesUuid.isEmpty()) ? null
+										: this.experimentService.createExperiment(traceServer,
+												new Body<>(createExperimentRequestDto));
+
+							}))
+					.map(CompletableFuture::join)
+					.map(CompletableFuture::join)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+
+			return Response.ok(ExperimentFactory.createExperiment(experiments)).build();
+		}
 	}
 
 	@PUT

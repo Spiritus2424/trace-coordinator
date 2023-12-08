@@ -26,9 +26,9 @@ function distribute_folders() {
   sshpass -p $password scp -r "$source_folder" "$user@$target_server:$target_folder"
 
   if [ $? -eq 0 ]; then
-    echo "Folders successfully copied to $target_server"
+    echo "Folders $source_folder successfully copied to $target_server"
   else
-    echo "Error copying folders to $target_server"
+    echo "Error copying folders $source_folder to $target_server"
   fi
 }
 
@@ -79,7 +79,7 @@ one_workers_one_trace=(l4714-02.info.polymtl.ca
 		l4714-25.info.polymtl.ca
 		l4714-26.info.polymtl.ca
 		l4714-27.info.polymtl.ca)
-# benchmark "benchmark-2" $folders $one_workers_one_trace 
+benchmark "benchmark-1" folders[@] one_workers_one_trace[@]
 
 one_workers_two_traces=(l4714-02.info.polymtl.ca
 		l4714-03.info.polymtl.ca
@@ -91,14 +91,14 @@ one_workers_two_traces=(l4714-02.info.polymtl.ca
 		l4714-13.info.polymtl.ca
 		l4714-14.info.polymtl.ca
 		l4714-16.info.polymtl.ca)
-# benchmark "benchmark-2" $folders $one_workers_two_traces 
+benchmark "benchmark-2" folders[@] one_workers_two_traces[@] 
 
 one_workers_four_traces=(l4714-02.info.polymtl.ca
 		l4714-03.info.polymtl.ca
 		l4714-04.info.polymtl.ca
 		l4714-05.info.polymtl.ca 
 		l4714-06.info.polymtl.ca)
-# benchmark "benchmark-3" $folders $one_workers_four_traces 
+benchmark "benchmark-3" folders[@] one_workers_four_traces[@] 
 
 
 one_workers_20_traces=(l4714-02.info.polymtl.ca)

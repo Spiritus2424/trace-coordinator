@@ -64,7 +64,7 @@ dependencies {
     implementation("com.google.guava:guava:31.0.1-jre")
 
     // Tsp Java Client
-    implementation("org.eclipse:tsp-java-client-insiders:v2.7.2-alpha")
+    implementation("org.eclipse:tsp-java-client-insiders:v2.7.3-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
@@ -97,5 +97,5 @@ tasks.jar {
 tasks.named<JavaExec>("run")  {
 	systemProperty("java.util.logging.config.file", "logging.properties")
 	systemProperty("org.eclipse.tracecompass.logging", true)
+    // jvmArgs(listOf("-Xmn2m", "-Xms32m", "-Xmx4g"))
 }
-

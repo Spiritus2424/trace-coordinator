@@ -7,6 +7,8 @@
 - [Running the trace coordinator](#running-the-trace-coordinator)
 - [Trace Coordinator Configuration File](#trace-coordinator-configuration-file)
 - [Trace Coordinator Properties](#trace-coordinator-properties)
+- [Build Trace Coordinator docker image](#build-trace-coordinator-docker-image)
+- [Benchmark](#benchmark)
 
 ## Authenticating to GitHub Packages
 
@@ -68,3 +70,21 @@ The trace coordinator need to load a configuration file, at top-level directory,
 The following properties are supported:
 
 - `TRACE_COORDINATOR_FILE`:  Path to the `trace-coordinator.yml` file. By default, it will check if the file is at the root of the project.
+
+For this data provider service will be augmented for managing configurations per experiment.
+
+## Build Trace Coordinator docker image
+
+Please ensure to have a [github personal access token](#authenticating-to-github-packages) before continuing.
+
+To build the trace-coordinator image using docker, simply run the following command from the git project top-level directory:
+
+    docker build -t trace-coordinator --build-arg GITHUB_USER=<YOUR_GITHUB_USER> --build-arg GITHUB_TOKEN=<YOUR_GITHUB_TOKEN> -f dockerfiles/Dockerfile.prod .
+
+To run the trace-coordinator docker image, simply run the following command:
+
+    docker run trace-coordinator
+
+## Benchmark
+
+If you want to generate benchmark for your use case, here some script available to help you. The description is in [README](./benchmarks/README.md).
