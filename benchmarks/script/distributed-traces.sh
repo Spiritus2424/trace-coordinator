@@ -3,9 +3,6 @@
 user=$1
 read -sp 'Password: ' password
 
-# Source directory
-source_directory="/workspaces/trace-coordinator/traces/hpc-soma-1400000"
-
 # Host file containing the list of servers (one per line)
 host_file="/workspaces/trace-coordinator/benchmarks/hosts"
 
@@ -104,10 +101,10 @@ source_directory="/workspaces/trace-coordinator/traces/hpc-soma-140000"
 # List all folders in the source directory
 folders=("$source_directory"/*)
 
-# benchmark "benchmark-1" folders[@] one_workers_one_trace[@]
-# benchmark "benchmark-2" folders[@] one_workers_two_traces[@]
-# benchmark "benchmark-3" folders[@] one_workers_four_traces[@]
-# benchmark "benchmark-4" folders[@] one_workers_20_traces[@]
+benchmark "benchmark-1" folders[@] one_workers_one_trace[@]
+benchmark "benchmark-2" folders[@] one_workers_two_traces[@]
+benchmark "benchmark-3" folders[@] one_workers_four_traces[@]
+benchmark "benchmark-4" folders[@] one_workers_20_traces[@]
 
 # Source directory
 source_directory="/workspaces/trace-coordinator/traces/hpc-soma-1400000"
