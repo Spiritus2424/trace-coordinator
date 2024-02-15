@@ -6,7 +6,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServer;
 import org.eclipse.trace.coordinator.core.traceserver.TraceServerManager;
 import org.eclipse.trace.coordinator.core.xy.XyService;
@@ -19,6 +22,9 @@ import org.eclipse.tsp.java.client.shared.entry.EntryModel;
 import org.eclipse.tsp.java.client.shared.query.Body;
 import org.eclipse.tsp.java.client.shared.response.GenericResponse;
 import org.eclipse.tsp.java.client.shared.response.ResponseStatus;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLog;
+import org.eclipse.tsp.java.client.shared.tracecompass.TraceCompassLogUtils.FlowScopeLogBuilder;
 
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -37,6 +43,7 @@ import jakarta.ws.rs.core.Response.Status;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class XyController {
+	private final @NonNull Logger logger;
 
 	@Inject
 	private XyService xyService;
@@ -44,35 +51,42 @@ public class XyController {
 	@Inject
 	private TraceServerManager traceServerManager;
 
+	public XyController() {
+		this.logger = TraceCompassLog.getLogger(XyController.class);
+	}
+
 	@POST
 	@Path("xy")
 	public Response getXy(
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetXyModelRequestDto> body) {
-		final GenericResponse<XyModel> genericResponseMerged = this.traceServerManager.getTraceServers()
-				.stream()
-				.map((TraceServer traceServer) -> this.xyService.getXy(traceServer, experimentUuid, outputId, body))
-				.filter(Objects::nonNull)
-				.map(CompletableFuture::join)
-				.reduce(null, (accumulator, genericResponse) -> {
-					if (accumulator == null) {
-						accumulator = genericResponse;
-					} else {
-						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-							accumulator.setStatus(genericResponse.getStatus());
-							accumulator.setMessage(genericResponse.getMessage());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"XyController#getXy").build()) {
+			final GenericResponse<XyModel> genericResponseMerged = this.traceServerManager.getTraceServers()
+					.stream()
+					.map((TraceServer traceServer) -> this.xyService.getXy(traceServer, experimentUuid, outputId, body))
+					.filter(Objects::nonNull)
+					.map(CompletableFuture::join)
+					.reduce(null, (accumulator, genericResponse) -> {
+						if (accumulator == null) {
+							accumulator = genericResponse;
+						} else {
+							if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+								accumulator.setStatus(genericResponse.getStatus());
+								accumulator.setMessage(genericResponse.getMessage());
+							}
+
+							if (genericResponse.getModel() != null) {
+								accumulator.getModel().getSeries().addAll(genericResponse.getModel().getSeries());
+							}
 						}
 
-						if (genericResponse.getModel() != null) {
-							accumulator.getModel().getSeries().addAll(genericResponse.getModel().getSeries());
-						}
-					}
+						return accumulator;
+					});
 
-					return accumulator;
-				});
-
-		return Response.ok(genericResponseMerged).build();
+			return Response.ok(genericResponseMerged).build();
+		}
 	}
 
 	@POST
@@ -81,34 +95,39 @@ public class XyController {
 			@NotNull @PathParam("expUUID") final UUID experimentUuid,
 			@NotNull @PathParam("outputId") final String outputId,
 			@NotNull @Valid final Body<GetXyTreeRequestDto> body) {
-		final Set<EntryHeader> headers = new HashSet<>();
-		final GenericResponse<EntryModel<Entry>> genericResponseMerged = this.traceServerManager.getTraceServers()
-				.stream()
-				.map((TraceServer traceServer) -> this.xyService.getTree(traceServer, experimentUuid, outputId, body))
-				.map(CompletableFuture::join)
-				.reduce(null, (accumulator, genericResponse) -> {
-					if (accumulator == null) {
-						accumulator = genericResponse;
-					} else {
-						if (accumulator.getStatus() != ResponseStatus.RUNNING) {
-							accumulator.setStatus(genericResponse.getStatus());
-							accumulator.setMessage(genericResponse.getMessage());
+		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
+				"XyController#getTree").build()) {
+			final Set<EntryHeader> headers = new HashSet<>();
+			final GenericResponse<EntryModel<Entry>> genericResponseMerged = this.traceServerManager.getTraceServers()
+					.stream()
+					.map((TraceServer traceServer) -> this.xyService.getTree(traceServer, experimentUuid, outputId,
+							body))
+					.map(CompletableFuture::join)
+					.filter(Objects::nonNull)
+					.reduce(null, (accumulator, genericResponse) -> {
+						if (accumulator == null) {
+							accumulator = genericResponse;
+						} else {
+							if (accumulator.getStatus() != ResponseStatus.RUNNING) {
+								accumulator.setStatus(genericResponse.getStatus());
+								accumulator.setMessage(genericResponse.getMessage());
+							}
+
+							if (genericResponse.getModel() != null) {
+								headers.addAll(genericResponse.getModel().getHeaders());
+								accumulator.getModel().getEntries().addAll(genericResponse.getModel().getEntries());
+
+							}
 						}
 
-						if (genericResponse.getModel() != null) {
-							headers.addAll(genericResponse.getModel().getHeaders());
-							accumulator.getModel().getEntries().addAll(genericResponse.getModel().getEntries());
+						return accumulator;
+					});
 
-						}
-					}
-
-					return accumulator;
-				});
-
-		if (genericResponseMerged.getModel() != null) {
-			genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+			if (genericResponseMerged != null && genericResponseMerged.getModel() != null) {
+				genericResponseMerged.getModel().setHeaders(new ArrayList<>(headers));
+			}
+			return Response.ok(genericResponseMerged).build();
 		}
-		return Response.ok(genericResponseMerged).build();
 	}
 
 	@GET

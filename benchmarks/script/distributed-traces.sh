@@ -4,7 +4,7 @@ user=$1
 read -sp 'Password: ' password
 
 # Host file containing the list of servers (one per line)
-host_file="/workspaces/trace-coordinator/benchmarks/hosts"
+# host_file="/workspaces/trace-coordinator/benchmarks/hosts"
 
 # Group to distribute folders to
 target_group="workers"
@@ -20,7 +20,7 @@ function distribute_folders() {
   sshpass -p $password ssh "$user@$target_server" "mkdir -p $target_folder"
 
   # Copy folders to the target server using scp
-  sshpass -p $password scp -r "$source_folder" "$user@$target_server:$target_folder"
+  sshpass -p $password scp -rC "$source_folder" "$user@$target_server:$target_folder"
 
   if [ $? -eq 0 ]; then
     echo "Folders $source_folder successfully copied to $target_server"
@@ -46,11 +46,11 @@ function benchmark() {
 }
 
 
-# Check if the host file exists
-if [ ! -f "$host_file" ]; then
-  echo "Host file '$host_file' not found."
-  exit 1
-fi
+# # Check if the host file exists
+# if [ ! -f "$host_file" ]; then
+#   echo "Host file '$host_file' not found."
+#   exit 1
+# fi
 
 # Read server addresses from the Ansible host file
 one_workers_one_trace=(l4714-02.info.polymtl.ca

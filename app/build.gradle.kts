@@ -97,5 +97,5 @@ tasks.jar {
 tasks.named<JavaExec>("run")  {
 	systemProperty("java.util.logging.config.file", "logging.properties")
 	systemProperty("org.eclipse.tracecompass.logging", true)
-    // jvmArgs(listOf("-Xmn2m", "-Xms32m", "-Xmx4g"))
+    jvmArgs(listOf("-Xmn2m", "-Xms32m", "-Xmx4g"))
 }
