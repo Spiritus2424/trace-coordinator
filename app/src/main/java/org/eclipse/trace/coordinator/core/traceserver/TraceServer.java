@@ -40,7 +40,7 @@ public class TraceServer {
 	}
 
 	public Long encodeEntryId(Long entryId) throws ArithmeticException {
-		final Integer step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
+		final int step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
 		if (entryId > step) {
 			throw new ArithmeticException(
 					String.format("The entry id is too big %d, it should be between [%d,%d[ for server %d", entryId,
@@ -62,13 +62,13 @@ public class TraceServer {
 		return encodeEntryId >= this.getLowerInterval() && encodeEntryId < this.getHigherInterval();
 	}
 
-	private Long getLowerInterval() {
-		final Long step = (Long.MAX_VALUE / TraceServer.numberOfTraceServer);
+	private int getLowerInterval() {
+		final int step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
 		return step * this.id;
 	}
 
-	private Long getHigherInterval() {
-		final Long step = (Long.MAX_VALUE / TraceServer.numberOfTraceServer);
+	private int getHigherInterval() {
+		final int step = (Integer.MAX_VALUE / TraceServer.numberOfTraceServer);
 		return (step * (this.id + 1));
 	}
 
