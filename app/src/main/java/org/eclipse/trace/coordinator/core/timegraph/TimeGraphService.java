@@ -70,31 +70,30 @@ public class TimeGraphService {
 		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
 				"TimeGraphService#getStates").build()) {
 
-			Body<GetTimeGraphStatesRequestDto> newBody = body.getParameters().getRequestedItems() == null
-					|| body.getParameters().getRequestedItems().isEmpty() ? body
-							: new Body<>(new GetTimeGraphStatesRequestDto(
-									body.getParameters().getRequestedTimerange(),
-									body.getParameters().getRequestedItems().stream()
-											.filter(traceServer::isValidEncodeEntryId)
-											.map(traceServer::decodeEntryId)
-											.collect(Collectors.toList())));
+			final List<Long> traceServerRequestedItems = List
+					.copyOf(body.getParameters().getRequestedItems().isEmpty() ? List.of()
+							: body.getParameters().getRequestedItems())
+					.stream()
+					.filter(traceServer::isValidEncodeEntryId)
+					.map(traceServer::decodeEntryId)
+					.collect(Collectors.toList());
+			Body<GetTimeGraphStatesRequestDto> newBody = new Body<>(new GetTimeGraphStatesRequestDto(
+					body.getParameters().getRequestedTimerange(),
+					traceServerRequestedItems));
 
-			return (body.getParameters().getRequestedItems() == null
-					|| body.getParameters().getRequestedItems().isEmpty()
-					|| !newBody.getParameters().getRequestedItems().isEmpty())
-							? traceServer.getTspClient().getTimeGraphApiAsync()
-									.getTimeGraphStates(experimentUuid, outputId, newBody)
-									.thenApply(response -> {
-										if (response.getResponseModel() != null
-												&& response.getResponseModel().getModel() != null) {
-											this.timeGraphAnalysis.computeStates(traceServer,
-													response.getResponseModel().getModel().getRows());
-										}
-										return response.getResponseModel();
-									})
-							: null;
+			return (body.getParameters().getRequestedItems().isEmpty() || !traceServerRequestedItems.isEmpty())
+					? traceServer.getTspClient().getTimeGraphApiAsync()
+							.getTimeGraphStates(experimentUuid, outputId, newBody)
+							.thenApply(response -> {
+								if (response.getResponseModel() != null
+										&& response.getResponseModel().getModel() != null) {
+									this.timeGraphAnalysis.computeStates(traceServer,
+											response.getResponseModel().getModel().getRows());
+								}
+								return response.getResponseModel();
+							})
+					: null;
 		}
-
 	}
 
 	public CompletableFuture<GenericResponse<Map<String, String>>> getTooltips(

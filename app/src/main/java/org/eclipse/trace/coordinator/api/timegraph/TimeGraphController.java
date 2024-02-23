@@ -81,6 +81,7 @@ public class TimeGraphController {
 					.map((TraceServer traceServer) -> this.timeGraphService.getArrows(traceServer, experimentUuid,
 							outputId,
 							body))
+					.filter(Objects::nonNull)
 					.map(CompletableFuture::join)
 					.reduce(null, (accumulator, genericResponse) -> {
 						if (accumulator == null) {
@@ -197,8 +198,8 @@ public class TimeGraphController {
 					.map((TraceServer traceServer) -> this.timeGraphService.getTree(traceServer, experimentUuid,
 							outputId,
 							body))
-					.map(CompletableFuture::join)
 					.filter(Objects::nonNull)
+					.map(CompletableFuture::join)
 					.reduce(null, (accumulator, genericResponse) -> {
 						if (accumulator == null) {
 							accumulator = genericResponse;

@@ -65,7 +65,7 @@ one_workers_one_trace=(l4714-02.info.polymtl.ca
 		l4714-16.info.polymtl.ca
 		l4714-17.info.polymtl.ca
 		l4714-18.info.polymtl.ca
-		l4714-19.info.polymtl.ca
+		l4714-24.info.polymtl.ca
 		l4714-20.info.polymtl.ca
 		l4714-21.info.polymtl.ca
 		l4714-22.info.polymtl.ca
@@ -101,8 +101,8 @@ source_directory="/workspaces/trace-coordinator/traces/hpc-soma-140000"
 # List all folders in the source directory
 folders=("$source_directory"/*)
 
-benchmark "benchmark-1" folders[@] one_workers_one_trace[@]
-benchmark "benchmark-2" folders[@] one_workers_two_traces[@]
+# benchmark "benchmark-1" folders[@] one_workers_one_trace[@]
+# benchmark "benchmark-2" folders[@] one_workers_two_traces[@]
 benchmark "benchmark-3" folders[@] one_workers_four_traces[@]
 benchmark "benchmark-4" folders[@] one_workers_20_traces[@]
 
@@ -112,7 +112,7 @@ source_directory="/workspaces/trace-coordinator/traces/hpc-soma-1400000"
 # List all folders in the source directory
 folders=("$source_directory"/*)
 
-benchmark "benchmark-5" folders[@] one_workers_one_trace[@]
-benchmark "benchmark-6" folders[@] one_workers_two_traces[@] 
+# benchmark "benchmark-5" folders[@] one_workers_one_trace[@]
+# benchmark "benchmark-6" folders[@] one_workers_two_traces[@] 
 benchmark "benchmark-7" folders[@] one_workers_four_traces[@] 
 benchmark "benchmark-8" folders[@] one_workers_20_traces[@]

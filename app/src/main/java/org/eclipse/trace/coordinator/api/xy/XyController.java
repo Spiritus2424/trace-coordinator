@@ -102,8 +102,8 @@ public class XyController {
 					.stream()
 					.map((TraceServer traceServer) -> this.xyService.getTree(traceServer, experimentUuid, outputId,
 							body))
-					.map(CompletableFuture::join)
 					.filter(Objects::nonNull)
+					.map(CompletableFuture::join)
 					.reduce(null, (accumulator, genericResponse) -> {
 						if (accumulator == null) {
 							accumulator = genericResponse;

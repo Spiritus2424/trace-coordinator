@@ -45,7 +45,7 @@ public class XyService {
 		try (FlowScopeLog flowScopeLog = new FlowScopeLogBuilder(this.logger, Level.FINE,
 				"XyService#getXy").build()) {
 			final List<Long> traceServerRequestedItems = List
-					.copyOf(body.getParameters().getRequestedItems() == null ? List.of()
+					.copyOf(body.getParameters().getRequestedItems().isEmpty() ? List.of()
 							: body.getParameters().getRequestedItems())
 					.stream()
 					.filter(traceServer::isValidEncodeEntryId)
@@ -57,7 +57,7 @@ public class XyService {
 							body.getParameters().getRequestedTimerange(),
 							traceServerRequestedItems));
 
-			return (body.getParameters().getRequestedItems() == null || !traceServerRequestedItems.isEmpty())
+			return (body.getParameters().getRequestedItems().isEmpty() || !traceServerRequestedItems.isEmpty())
 					? traceServer.getTspClient().getXyApiAsync().getXy(experimentUuid, outputId, newBody)
 							.thenApply(response -> {
 								if (response.getResponseModel().getModel() != null) {
