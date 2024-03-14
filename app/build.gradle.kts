@@ -64,7 +64,7 @@ dependencies {
     implementation("com.google.guava:guava:31.0.1-jre")
 
     // Tsp Java Client
-    implementation("org.eclipse:tsp-java-client-insiders:v2.7.4-alpha")
+    implementation("org.eclipse:tsp-java-client-insiders:v2.7.5-alpha")
 
     // Jackson
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.2")
